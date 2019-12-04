@@ -1,0 +1,11 @@
+[package]
+name = "tower"
+version = "0.1.0"
+authors = []
+edition = "2018"
+
+[dependencies]
+image = "0.22.3"
+[dependencies.amethyst]
+version = "0.13"
+features = ["vulkan"]
