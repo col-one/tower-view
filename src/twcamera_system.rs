@@ -6,7 +6,7 @@ use amethyst::{
     ecs::{Join, Read, System, SystemData, World, WriteStorage},
     ecs::prelude::*,
     renderer::rendy::wsi::winit::MouseButton,
-    renderer::{Camera},
+    renderer::camera::{ActiveCamera, Camera},
 };
 use std::time::Duration;
 
@@ -26,7 +26,7 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
     fn run(&mut self, (input, mut world, tw_cameras, mut transforms): Self::SystemData) {
         let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
-            if input.key_is_down(VirtualKeyCode::LControl) && input.mouse_button_is_down(MouseButton::Left) {
+            if input.key_is_down(VirtualKeyCode::Space) && input.mouse_button_is_down(MouseButton::Left) {
                 if tw_input_handler.last_mouse_pos.is_none() {
                     tw_input_handler.set_last_mouse_pos(input.mouse_position());
                 } else {
@@ -37,12 +37,28 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
                     let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
                     tw_input_handler.last_mouse_dist = (dist.0, dist.1);
                     transform.prepend_translation_x(-delta_x);
-                    transform.prepend_translation_y(-delta_y);
+                    transform.prepend_translation_y(delta_y);
                 }
-            } else if input.key_is_down(VirtualKeyCode::LControl) {
+            } else if input.key_is_down(VirtualKeyCode::Space) {
                 tw_input_handler.set_last_mouse_pos(None);
                 tw_input_handler.last_mouse_dist = (0.0, 0.0);
             }
         }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct CameraKeepRatioSystem;
+
+
+impl<'s> System<'s> for CameraKeepRatioSystem {
+    type SystemData = (
+    ReadStorage<'s, Camera>
+    );
+
+    fn run(&mut self, (camera): Self::SystemData) {
+        let camera = (&camera).join().next();
+        println!("{:?}", camera.unwrap().projection());
     }
 }

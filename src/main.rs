@@ -20,7 +20,7 @@ mod twinputshandler;
 mod tower;
 
 use crate::tower::{Tower, BACKGROUNDCOLOR};
-use crate::twcamera_system::CameraTranslateNavigationSystem;
+use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem};
 use crate::twimage_system::TwImageMoveSystem;
 
 fn main() -> amethyst::Result<()> {
@@ -39,8 +39,8 @@ fn main() -> amethyst::Result<()> {
                         .with_clear(BACKGROUNDCOLOR),)
                 .with_plugin(RenderFlat2D::default())
         )?
-        .with(ortho_camera::CameraOrthoSystem, "camera_ortho_system", &["input_system"])
         .with(CameraTranslateNavigationSystem, "camera_translate_system", &["input_system"])
+        .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system"]);
 
     let assets_dir = app_root.join("assets");

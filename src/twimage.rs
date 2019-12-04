@@ -100,7 +100,7 @@ pub fn create_sprite_sheet(world: &mut World, texture_data: TextureData, tw_imag
     let sprite = Sprite::from_pixel_values(
             tw_image.width, tw_image.height, tw_image.width,
             tw_image.height, 0, 0, [0.0, 0.0],
-            false, true,
+            false, false,
         );
     sprites.push(sprite);
     let sprite_sheet = SpriteSheet {

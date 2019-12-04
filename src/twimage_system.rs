@@ -31,7 +31,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
                     let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
                     tw_input_handler.last_mouse_dist = (dist.0, dist.1);
                     transform.prepend_translation_x(delta_x);
-                    transform.prepend_translation_y(delta_y);
+                    transform.prepend_translation_y(-delta_y);
                 }
             } else if input.key_is_down(VirtualKeyCode::LAlt) {
                 tw_input_handler.set_last_mouse_pos(None);
