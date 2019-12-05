@@ -18,10 +18,14 @@ mod twcamera;
 mod twcamera_system;
 mod twinputshandler;
 mod tower;
+mod twutils;
+mod twraycasting_system;
 
 use crate::tower::{Tower, BACKGROUNDCOLOR};
-use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem};
+use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
+                             CameraZoomNavigationSystem, CameraFitNavigationSystem};
 use crate::twimage_system::TwImageMoveSystem;
+use crate::twraycasting_system::TwMouseRaycastSystem;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -32,15 +36,15 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
-        .with_bundle(
-            RenderingBundle::<DefaultBackend>::new()
-                .with_plugin(
-            RenderToWindow::from_config_path(display_config_path)
+        .with_bundle(RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(RenderToWindow::from_config_path(display_config_path)
                         .with_clear(BACKGROUNDCOLOR),)
-                .with_plugin(RenderFlat2D::default())
-        )?
+                .with_plugin(RenderFlat2D::default()))?
         .with(CameraTranslateNavigationSystem, "camera_translate_system", &["input_system"])
         .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system"])
+        .with(CameraZoomNavigationSystem, "camera_zoom_system", &["input_system"])
+        .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system"])
+        .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system"]);
 
     let assets_dir = app_root.join("assets");

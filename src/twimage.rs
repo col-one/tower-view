@@ -16,10 +16,10 @@ use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 
 // Component Image
 pub struct TwImage {
-    width: u32,
-    height: u32,
-    file_name: String,
-    ratio: f32,
+    pub width: u32,
+    pub height: u32,
+    pub file_name: String,
+    pub ratio: f32,
 }
 
 impl TwImage {
