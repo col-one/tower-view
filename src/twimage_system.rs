@@ -15,6 +15,7 @@ use crate::twutils::point_in_rect;
 
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 use uuid::Uuid;
+use std::{thread, time};
 
 
 #[derive(SystemDesc)]
@@ -68,7 +69,6 @@ impl<'s> System<'s> for TwImageMoveSystem {
                 if tw_input_handler.twimage_active.is_none() {
                     if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
                         tw_input_handler.set_twimage_active(Some(tw_image.id));
-                        println!("active {:?} {:?}", tw_image.id, tw_input_handler.twimage_active);
                     }
                 }
                 // trace vector to move image
@@ -95,3 +95,40 @@ impl<'s> System<'s> for TwImageMoveSystem {
     }
 }
 
+
+#[derive(SystemDesc)]
+pub struct TwImageLayoutSystem;
+
+impl<'s> System<'s> for TwImageLayoutSystem {
+    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+                       Write<'s, World>,
+                       ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, Transform>,
+                       ReadStorage<'s, SpriteRender>,
+                       Read<'s, AssetStorage<SpriteSheet>>, );
+    fn run(&mut self, (
+        input,
+        mut world,
+        tw_images,
+        mut transforms,
+        sprites,
+        sprite_sheets
+    ): Self::SystemData) {
+        if input.key_is_down(VirtualKeyCode::L) {
+            let components = (&tw_images, &mut transforms, &sprites).join();
+            for (i, (tw_image, transform, sprite)) in components.enumerate() {
+                if i > 0 {
+                    let (before_tw_image, before_sprite_render) = (&tw_images, &sprites).join().nth(i-1).unwrap();
+                    let before_sprite_sheet = sprite_sheets.get(&before_sprite_render.sprite_sheet).unwrap();
+                    let before_sprite = &before_sprite_sheet.sprites[before_sprite_render.sprite_number];
+                    let offset_sprite_w = before_sprite.width;
+                    let offset_sprite_h = before_sprite.height;
+                    let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
+                    let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                    transform.set_translation_x(offset_sprite_w);
+                    transform.set_translation_y(offset_sprite_h - sprite.height * 0.5);
+                }
+            }
+        }
+    }
+}

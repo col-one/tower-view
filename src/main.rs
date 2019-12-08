@@ -24,7 +24,7 @@ mod twraycasting_system;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                              CameraZoomNavigationSystem, CameraFitNavigationSystem};
-use crate::twimage_system::TwImageMoveSystem;
+use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem};
 use crate::twraycasting_system::TwMouseRaycastSystem;
 
 fn main() -> amethyst::Result<()> {
@@ -45,6 +45,7 @@ fn main() -> amethyst::Result<()> {
         .with(CameraZoomNavigationSystem, "camera_zoom_system", &["input_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system"])
         .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
+        .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system"]);
 
     let assets_dir = app_root.join("assets");
