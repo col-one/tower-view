@@ -13,7 +13,7 @@ use std::time::Duration;
 
 use crate::twcamera::TwCamera;
 use crate::twinputshandler::TwInputHandler;
-use crate::tower::WINDOWHEIGHT;
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH};
 
 
 #[derive(SystemDesc)]
@@ -120,6 +120,8 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
             if input.key_is_down(VirtualKeyCode::F) {
                transform.set_translation_z(WINDOWHEIGHT);
+               transform.set_translation_x(WINDOWWIDTH * 0.5);
+               transform.set_translation_y(WINDOWHEIGHT * 0.5);
             }
         }
     }

@@ -12,9 +12,10 @@ use amethyst::assets::{AssetStorage};
 use crate::twimage::TwImage;
 use crate::twinputshandler::TwInputHandler;
 use crate::twutils::point_in_rect;
-//use cgmath::{Matrix4, Point3, Vector3};
-//use cgmath::InnerSpace;
+
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
+use uuid::Uuid;
+
 
 #[derive(SystemDesc)]
 pub struct TwImageMoveSystem;
@@ -34,8 +35,8 @@ impl<'s> System<'s> for TwImageMoveSystem {
             sprites,
             sprite_sheets
         ): Self::SystemData) {
-        let tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
-        for (sprite, transform, tw_image) in (&sprites, &transforms, &tw_images).join() {
+        let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
+        for (sprite, transform, tw_image) in (&sprites, &mut transforms, &tw_images).join() {
             let mouse_world_position = tw_input_handler.mouse_world_pos;
             let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -52,30 +53,43 @@ impl<'s> System<'s> for TwImageMoveSystem {
                 && mouse_world_position.y > min_y
                 && mouse_world_position.y < max_y
             {
-                println!("Inside !")
+                if !tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
+                    tw_input_handler.twimages_under_mouse.push((tw_image.id, tw_image.z_order));
+                }
             } else {
-                println!("Outsie !")
+                if tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
+                    let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
+                    tw_input_handler.twimages_under_mouse.remove(index);
+                }
+            }
+            tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.cmp(&a.1));
+            if input.key_is_down(VirtualKeyCode::LAlt) && input.mouse_button_is_down(MouseButton::Left) {
+                if tw_input_handler.twimage_active.is_none() {
+                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+                        tw_input_handler.set_twimage_active(Some(tw_image.id));
+                        println!("active {:?} {:?}", tw_image.id, tw_input_handler.twimage_active);
+                    }
+                }
+                if tw_input_handler.last_mouse_pos.is_none() {
+                    tw_input_handler.set_last_mouse_pos(input.mouse_position());
+                }
+                if tw_input_handler.twimage_active == Some(tw_image.id) {
+                    let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
+                    let (x2, y2) = input.mouse_position().unwrap();
+                    let dist = ((x2 - x), (y2 - y));
+                    let delta_x = dist.0 - tw_input_handler.last_mouse_dist.0;
+                    let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
+                    tw_input_handler.last_mouse_dist = (dist.0, dist.1);
+                    transform.prepend_translation_x(delta_x);
+                    transform.prepend_translation_y(-delta_y);
+                    println!("Move twimage {:?} {:?}", tw_input_handler.last_mouse_pos.unwrap(), input.mouse_position().unwrap());
+                }
+            } else if input.key_is_down(VirtualKeyCode::LAlt) {
+                tw_input_handler.set_last_mouse_pos(None);
+                tw_input_handler.set_twimage_active(None);
+                tw_input_handler.last_mouse_dist = (0.0, 0.0);
             }
         }
-//            if input.key_is_down(VirtualKeyCode::LAlt) &&
-//                input.mouse_button_is_down(MouseButton::Left) && pointer_inside {
-//                if tw_input_handler.last_mouse_pos.is_none() {
-//                    tw_input_handler.set_last_mouse_pos(input.mouse_position());
-//                } else {
-//                    let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
-//                    let (x2, y2) = input.mouse_position().unwrap();
-//                    let dist = ((x2 - x), (y2 - y));
-//                    let delta_x = dist.0 - tw_input_handler.last_mouse_dist.0;
-//                    let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
-//                    tw_input_handler.last_mouse_dist = (dist.0, dist.1);
-//                    transform.prepend_translation_x(delta_x);
-//                    transform.prepend_translation_y(-delta_y);
-//                }
-//            } else if input.key_is_down(VirtualKeyCode::LAlt) {
-//                tw_input_handler.set_last_mouse_pos(None);
-//                tw_input_handler.last_mouse_dist = (0.0, 0.0);
-//            }
-//        }
     }
 }
 
