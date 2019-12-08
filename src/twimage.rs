@@ -118,8 +118,8 @@ pub fn create_sprite_sheet(world: &mut World, texture_data: TextureData, tw_imag
 
 pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>) {
     let mut transform = Transform::default();
-    transform.set_translation_x( WINDOWWIDTH / 2.0);
-    transform.set_translation_y(WINDOWHEIGHT / 2.0);
+    transform.set_translation_x( 0.0);
+    transform.set_translation_y( 0.0);
     let sprite_render = SpriteRender {
         sprite_sheet: sprite_sheet.clone(),
         sprite_number: 0,

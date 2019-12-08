@@ -101,32 +101,27 @@ pub struct TwImageLayoutSystem;
 
 impl<'s> System<'s> for TwImageLayoutSystem {
     type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
                        ReadStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
                        ReadStorage<'s, SpriteRender>,
                        Read<'s, AssetStorage<SpriteSheet>>, );
     fn run(&mut self, (
         input,
-        mut world,
         tw_images,
         mut transforms,
         sprites,
         sprite_sheets
     ): Self::SystemData) {
         if input.key_is_down(VirtualKeyCode::L) {
-            let components = (&tw_images, &mut transforms, &sprites).join();
-            for (i, (tw_image, transform, sprite)) in components.enumerate() {
-                if i > 0 {
-                    let (before_tw_image, before_sprite_render) = (&tw_images, &sprites).join().nth(i-1).unwrap();
-                    let before_sprite_sheet = sprite_sheets.get(&before_sprite_render.sprite_sheet).unwrap();
-                    let before_sprite = &before_sprite_sheet.sprites[before_sprite_render.sprite_number];
-                    let offset_sprite_w = before_sprite.width;
-                    let offset_sprite_h = before_sprite.height;
+            let mut i = 0;
+            for x in 0..4 {
+                for y in 0..1 {
+                    let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
                     let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                     let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-                    transform.set_translation_x(offset_sprite_w);
-                    transform.set_translation_y(offset_sprite_h - sprite.height * 0.5);
+                    transform.set_translation_x(sprite.width * x as f32);
+                    transform.set_translation_y(sprite.height * y as f32);
+                    i += 1;
                 }
             }
         }

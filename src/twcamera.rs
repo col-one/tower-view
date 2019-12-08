@@ -18,7 +18,7 @@ impl Component for TwCamera {
 
 pub fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
-    transform.set_translation_xyz(WINDOWWIDTH * 0.5, WINDOWHEIGHT * 0.5, WINDOWHEIGHT);
+    transform.set_translation_xyz(0.0, 0.0, WINDOWHEIGHT);
     let cam_entity = world.create_entity()
         .with(TwCamera)
         .with(Camera::standard_3d(WINDOWWIDTH, WINDOWHEIGHT))

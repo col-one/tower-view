@@ -66,7 +66,7 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
             (window_size.width / window_size.height) as f32,
             std::f32::consts::FRAC_PI_3,
             0.1,
-            2000.0,
+            6000.0,
         );
         camera.set_projection(proj);
     }
@@ -120,8 +120,8 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
             if input.key_is_down(VirtualKeyCode::F) {
                transform.set_translation_z(WINDOWHEIGHT);
-               transform.set_translation_x(WINDOWWIDTH * 0.5);
-               transform.set_translation_y(WINDOWHEIGHT * 0.5);
+               transform.set_translation_x(0.0);
+               transform.set_translation_y(0.0);
             }
         }
     }
