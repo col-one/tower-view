@@ -64,12 +64,14 @@ impl<'s> System<'s> for TwImageMoveSystem {
             }
             tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.cmp(&a.1));
             if input.key_is_down(VirtualKeyCode::LAlt) && input.mouse_button_is_down(MouseButton::Left) {
+                // set as active image the highest image z order
                 if tw_input_handler.twimage_active.is_none() {
                     if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
                         tw_input_handler.set_twimage_active(Some(tw_image.id));
                         println!("active {:?} {:?}", tw_image.id, tw_input_handler.twimage_active);
                     }
                 }
+                // trace vector to move image
                 if tw_input_handler.last_mouse_pos.is_none() {
                     tw_input_handler.set_last_mouse_pos(input.mouse_position());
                 }
@@ -82,8 +84,8 @@ impl<'s> System<'s> for TwImageMoveSystem {
                     tw_input_handler.last_mouse_dist = (dist.0, dist.1);
                     transform.prepend_translation_x(delta_x);
                     transform.prepend_translation_y(-delta_y);
-                    println!("Move twimage {:?} {:?}", tw_input_handler.last_mouse_pos.unwrap(), input.mouse_position().unwrap());
                 }
+            // reset of position data mouse and active image
             } else if input.key_is_down(VirtualKeyCode::LAlt) {
                 tw_input_handler.set_last_mouse_pos(None);
                 tw_input_handler.set_twimage_active(None);
