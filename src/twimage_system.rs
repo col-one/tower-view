@@ -114,14 +114,15 @@ impl<'s> System<'s> for TwImageLayoutSystem {
     ): Self::SystemData) {
         if input.key_is_down(VirtualKeyCode::L) {
             let mut i = 0;
-            for x in 0..4 {
-                for y in 0..1 {
-                    let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
-                    let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
-                    let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-                    transform.set_translation_x(sprite.width * x as f32);
-                    transform.set_translation_y(sprite.height * y as f32);
-                    i += 1;
+            'out: for x in 0..2 {
+                    for y in 0..2 {
+                        if i >= tw_images.count() { break 'out }
+                        let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
+                        let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
+                        let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                        transform.set_translation_x(sprite.width * x as f32);
+                        transform.set_translation_y(sprite.height * y as f32);
+                        i += 1;
                 }
             }
         }

@@ -5,22 +5,39 @@ use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteS
     Format,
     };
 use amethyst::core::transform::Transform;
-use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
+use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage};
 use amethyst::prelude::*;
 use amethyst::assets::{AssetStorage, Loader, Handle};
 use image;
 use image::{GenericImageView, ImageDecoder, ImageDecoderExt, ColorType};
 use std::borrow::Cow;
 use uuid::Uuid;
+use std::path::PathBuf;
+
 
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 use crate::twutils::premultiply_by_alpha;
+use crate::twargs_cli::Opt;
 
 pub fn get_color_type(color: &ColorType) -> Format {
     match color {
         ColorType::RGB(8) => Format::Rgb8Srgb,
         ColorType::RGBA(8) => Format::Rgba8Srgb,
         _ => Format::Rgb8Unorm
+    }
+}
+
+pub struct InputComponent {
+    pub path: String,
+}
+
+impl Component for InputComponent {
+    type Storage = VecStorage<Self>;
+}
+
+impl  InputComponent {
+    fn new(path: String) -> Self {
+        Self {path}
     }
 }
 
@@ -126,8 +143,24 @@ pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet:
     };
     world.create_entity()
         .with(transform)
-        .with(sprite_render.clone())
+        .with(sprite_render)
         .with(tw_image)
         .with(Transparent)
         .build();
+}
+
+pub fn load_image_from_paths(world: &mut World) {
+    let mut z_count = 0;
+    let inputs = {
+        let opt = world.fetch::<Opt>();
+        opt.inputs.iter().map(|input| InputComponent::new(input.to_owned()))
+            .collect::<Vec<_>>()
+    };
+    for path in inputs {
+        let (mut tw_image, texture_data) = load_texture_from_file(&path.path);
+        let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
+        tw_image.z_order = z_count;
+        create_entity_twimage(world, tw_image, sprite_sheet);
+        z_count += 1;
+    }
 }

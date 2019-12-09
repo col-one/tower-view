@@ -1,3 +1,4 @@
+use structopt::StructOpt;
 use amethyst::{
     core::transform::TransformBundle,
     ecs::prelude::{ReadExpect, SystemData},
@@ -12,6 +13,7 @@ use amethyst::{
     input::{InputBundle, StringBindings},
 };
 
+mod twargs_cli;
 mod twimage;
 mod twimage_system;
 mod twcamera;
@@ -21,11 +23,13 @@ mod tower;
 mod twutils;
 mod twraycasting_system;
 
+use crate::twargs_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                              CameraZoomNavigationSystem, CameraFitNavigationSystem};
 use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem};
 use crate::twraycasting_system::TwMouseRaycastSystem;
+
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
