@@ -2,6 +2,9 @@ use amethyst::prelude::*;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
 use amethyst::core::math::{dimension::U3, Point3};
+use amethyst::{
+        winit::{VirtualKeyCode, Event, WindowEvent},
+};
 
 use uuid::Uuid;
 use crate::twimage::TwImage;
@@ -36,5 +39,15 @@ impl TwInputHandler {
     }
     pub fn set_twimage_active(&mut self, uuid: Option<Uuid>) {
         self.twimage_active = uuid;
+    }
+}
+
+pub fn get_drop_file(event: &Event) -> Option<String> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::DroppedFile(path) => Some(path.to_str().unwrap().to_owned()),
+            _ => None,
+        },
+        _ => None,
     }
 }

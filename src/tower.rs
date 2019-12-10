@@ -2,12 +2,15 @@ use structopt::StructOpt;
 use amethyst::{
     ecs::prelude::*,
     prelude::*,
+    input,
 };
+
 use crate::twimage;
 use crate::twcamera;
 use crate::twinputshandler;
 use crate::twimage::TwImage;
 use crate::twargs_cli::Opt;
+use crate::twinputshandler::get_drop_file;
 
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
@@ -51,4 +54,15 @@ impl<'a> SimpleState for Tower {
         //
         twcamera::initialise_camera(world);
     }
+
+    fn handle_event(&mut self, _: StateData<'_, GameData<'_, '_>>, event: StateEvent,
+    ) -> SimpleTrans {
+        if let StateEvent::Window(event) = event {
+            if let Some(drop_file) = get_drop_file(&event) {
+                println!("{:?}", drop_file);
+            }
+        }
+        Trans::None
+    }
 }
+
