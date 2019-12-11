@@ -15,17 +15,10 @@ use uuid::Uuid;
 use std::path::PathBuf;
 
 
-use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
+use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::twutils::premultiply_by_alpha;
 use crate::twargs_cli::Opt;
 
-pub fn get_color_type(color: &ColorType) -> Format {
-    match color {
-        ColorType::RGB(8) => Format::Rgb8Srgb,
-        ColorType::RGBA(8) => Format::Rgba8Srgb,
-        _ => Format::Rgb8Unorm
-    }
-}
 
 pub struct InputComponent {
     pub path: String,
@@ -40,7 +33,6 @@ impl  InputComponent {
         Self {path}
     }
 }
-
 
 // Component Image
 #[derive(PartialEq, Debug)]
@@ -80,7 +72,13 @@ impl Component for TwImage {
 
 
 
-
+pub fn get_color_type(color: &ColorType) -> Format {
+    match color {
+        ColorType::RGB(8) => Format::Rgb8Srgb,
+        ColorType::RGBA(8) => Format::Rgba8Srgb,
+        _ => Format::Rgb8Unorm
+    }
+}
 
 pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
@@ -149,8 +147,11 @@ pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet:
         .build();
 }
 
-pub fn load_image_from_paths(world: &mut World) {
-    let mut z_count = 0;
+pub fn load_image_from_inputs_arg(world: &mut World) {
+    let mut z_count = {
+        let mut td = world.fetch_mut::<TowerData>();
+        td.twimage_count
+    };
     let inputs = {
         let opt = world.fetch::<Opt>();
         opt.inputs.iter().map(|input| InputComponent::new(input.to_owned()))
@@ -163,4 +164,20 @@ pub fn load_image_from_paths(world: &mut World) {
         create_entity_twimage(world, tw_image, sprite_sheet);
         z_count += 1;
     }
+        let mut td = world.fetch_mut::<TowerData>();
+        td.twimage_count = z_count;
+}
+
+pub fn load_image_from_path(world: &mut World, path: &str) {
+    let mut z_count = {
+        let mut td = world.fetch_mut::<TowerData>();
+        td.twimage_count
+    };
+    let (mut tw_image, texture_data) = load_texture_from_file(path);
+    let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
+    tw_image.z_order = z_count;
+    create_entity_twimage(world, tw_image, sprite_sheet);
+    z_count += 1;
+    let mut td = world.fetch_mut::<TowerData>();
+    td.twimage_count = z_count;
 }

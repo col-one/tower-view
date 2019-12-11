@@ -73,17 +73,23 @@ impl<'s> System<'s> for TwImageMoveSystem {
                 }
                 // trace vector to move image
                 if tw_input_handler.last_mouse_pos.is_none() {
-                    tw_input_handler.set_last_mouse_pos(input.mouse_position());
+                    let world_pos = {
+                        Some((tw_input_handler.mouse_world_pos.x, tw_input_handler.mouse_world_pos.y))
+                    };
+                    tw_input_handler.set_last_mouse_pos(world_pos);
                 }
                 if tw_input_handler.twimage_active == Some(tw_image.id) {
+                    let world_pos = {
+                        Some((tw_input_handler.mouse_world_pos.x, tw_input_handler.mouse_world_pos.y))
+                    };
                     let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
-                    let (x2, y2) = input.mouse_position().unwrap();
+                    let (x2, y2) = world_pos.unwrap();
                     let dist = ((x2 - x), (y2 - y));
                     let delta_x = dist.0 - tw_input_handler.last_mouse_dist.0;
                     let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
                     tw_input_handler.last_mouse_dist = (dist.0, dist.1);
                     transform.prepend_translation_x(delta_x);
-                    transform.prepend_translation_y(-delta_y);
+                    transform.prepend_translation_y(delta_y);
                 }
             // reset of position data mouse and active image
             } else if input.key_is_down(VirtualKeyCode::LAlt) {

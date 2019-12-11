@@ -21,6 +21,7 @@ mod twcamera_system;
 mod twinputshandler;
 mod tower;
 mod twutils;
+mod twscene_system;
 mod twraycasting_system;
 
 use crate::twargs_cli::Opt;
@@ -29,6 +30,7 @@ use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSys
                              CameraZoomNavigationSystem, CameraFitNavigationSystem};
 use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem};
 use crate::twraycasting_system::TwMouseRaycastSystem;
+use crate::twscene_system::{SceneBoundingBox};
 
 
 fn main() -> amethyst::Result<()> {
@@ -50,6 +52,7 @@ fn main() -> amethyst::Result<()> {
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system"])
         .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
         .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
+        .with(SceneBoundingBox, "scene_bounding_system", &["input_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system"]);
 
     let assets_dir = app_root.join("assets");

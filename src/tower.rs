@@ -3,6 +3,7 @@ use amethyst::{
     ecs::prelude::*,
     prelude::*,
     input,
+    renderer::rendy::hal::pso::Rect,
 };
 
 use crate::twimage;
@@ -18,6 +19,19 @@ pub const WINDOWWIDTH: f32 = 1080.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
 
 
+pub struct TowerData {
+    pub twimage_count: u8,
+    pub scene_rect: Rect,
+}
+
+impl Default for TowerData {
+    fn default() -> Self {
+        Self {
+            twimage_count: 0u8,
+            scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16},
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct Tower;
@@ -28,38 +42,20 @@ impl<'a> SimpleState for Tower {
         // command line arguments
         let opt = Opt::from_args();
         world.insert(opt);
-        twimage::load_image_from_paths(world);
-        //
-//        world.entry::<twinputshandler::TwInputHandler>().or_insert_with(|| twinputshandler::TwInputHandler::default());
-        //
-
-
-//        let (mut tw_image, texture_data) = twimage::load_texture_from_file("/home/colin/workspace/tower/assets/texture/maxresdefault.jpg");
-//        let (mut tw_image2, texture_data2) = twimage::load_texture_from_file("/home/colin/workspace/tower/assets/texture/maxresdefault.jpg");
-//        let (mut tw_image3, texture_data3) = twimage::load_texture_from_file("/home/colin/workspace/tower/assets/texture/maxresdefault.jpg");
-//        let (mut tw_image4, texture_data4) = twimage::load_texture_from_file("/home/colin/workspace/tower/assets/texture/maxresdefault.jpg");
-//        let sprite_sheet = twimage::create_sprite_sheet(world, texture_data, &tw_image);
-//        let sprite_sheet2 = twimage::create_sprite_sheet(world, texture_data2, &tw_image2);
-//        let sprite_sheet3 = twimage::create_sprite_sheet(world, texture_data3, &tw_image3);
-//        let sprite_sheet4 = twimage::create_sprite_sheet(world, texture_data4, &tw_image4);
-//        tw_image.z_order = 0;
-//        twimage::create_entity_twimage(world, tw_image, sprite_sheet);
-//        tw_image2.z_order = 1;
-//        twimage::create_entity_twimage(world, tw_image2, sprite_sheet2);
-//        tw_image3.z_order = 3;
-//        twimage::create_entity_twimage(world, tw_image3, sprite_sheet3);
-//        tw_image3.z_order = 4;
-//        twimage::create_entity_twimage(world, tw_image4, sprite_sheet4);
-
-        //
+        // init tower data
+        let mut tower_data = TowerData{twimage_count: 0u8, scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16}};
+        world.insert(tower_data);
+        // load image from inputs arg
+        twimage::load_image_from_inputs_arg(world);
         twcamera::initialise_camera(world);
     }
 
-    fn handle_event(&mut self, _: StateData<'_, GameData<'_, '_>>, event: StateEvent,
+    fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent,
     ) -> SimpleTrans {
         if let StateEvent::Window(event) = event {
             if let Some(drop_file) = get_drop_file(&event) {
-                println!("{:?}", drop_file);
+                let mut world = data.world;
+                twimage::load_image_from_path(world, &drop_file);
             }
         }
         Trans::None

@@ -8,12 +8,13 @@ use amethyst::{
     renderer::rendy::wsi::winit::MouseButton,
     renderer::camera::{ActiveCamera, Camera, Projection},
     renderer::rendy::wsi::winit::Window,
+    renderer::rendy::hal::pso::Rect,
 };
 use std::time::Duration;
 
 use crate::twcamera::TwCamera;
 use crate::twinputshandler::TwInputHandler;
-use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH};
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 
 
 #[derive(SystemDesc)]
@@ -116,13 +117,16 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
                        WriteStorage<'s, Transform>,);
 
     fn run(&mut self, (input, mut world, tw_cameras, mut transforms): Self::SystemData) {
-        let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
+        let mut td = world.entry::<TowerData>().or_insert_with(|| TowerData::default());
+//        println!("{:?}", td.scene_rect);
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
             if input.key_is_down(VirtualKeyCode::F) {
-               transform.set_translation_z(WINDOWHEIGHT);
-               transform.set_translation_x(0.0);
-               transform.set_translation_y(0.0);
+               transform.set_translation_z( if td.scene_rect.w > td.scene_rect.h { td.scene_rect.w } else { td.scene_rect.h } as f32 );
+               transform.set_translation_x((td.scene_rect.x + td.scene_rect.w) as f32 / 2.0);
+               transform.set_translation_y((td.scene_rect.y + td.scene_rect.h) as f32 / 2.0);
             }
         }
     }
 }
+
+
