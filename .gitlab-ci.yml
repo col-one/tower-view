@@ -10,7 +10,7 @@ variables:
 
 before_script:
   - apt-get update -y
-  - apt-get install libasound2-dev libxcb-xrm-dev -y
+  - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
 
 test:
   stage: test
