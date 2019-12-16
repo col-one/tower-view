@@ -10,7 +10,7 @@ variables:
 
 before_script:
   - apt-get update -yq
-  - apt install libasound2-dev
+  - apt install -y libasound2-dev
 
 test:
   stage: test
