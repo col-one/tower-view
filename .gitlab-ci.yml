@@ -2,8 +2,6 @@ image: 'rust:latest'
 
 stages:
   - test
-  - test2
-  - build
 
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
