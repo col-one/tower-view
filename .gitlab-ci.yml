@@ -11,14 +11,14 @@ before_script:
   - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
 
 test:
-  stage: test
+#  stage: test
   script:
     - rustc --version
     - cargo --version
     - cargo test --verbose
 
 test2:
-  stage: test2
+#  stage: test2
   script:
     - echo kikoo
 
