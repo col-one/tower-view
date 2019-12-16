@@ -19,6 +19,11 @@ test:
     - cargo --version
     - cargo test --verbose
 
+test2:
+  stage: test2
+  script:
+    - echo kikoo
+
 #pages:
 #  stage: doc
 #  script:
