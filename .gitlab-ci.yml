@@ -11,12 +11,21 @@ before_script:
   - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
 
 build:
-#  stage: test
+# stage: build
   script:
     - rustc --version
     - cargo --version
     - cargo build --release
+  artifacts:
+    paths:
+    - target/release/tower
 
+package:
+  script: cat file1.txt file2.txt | gzip > packaged.gz
+  artifacts:
+    paths:
+    - packaged.gz
+    
 #test2:
 #  stage: test2
 #  script:
