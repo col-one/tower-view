@@ -9,8 +9,8 @@ variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
 
 before_script:
-  - apt-get update -yq
-  - apt install -y libasound2-dev
+  - apt-get update -y
+  - apt-get install libasound2-dev -y
 
 test:
   stage: test
