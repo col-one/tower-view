@@ -59,6 +59,8 @@ impl<'s> System<'s> for SceneBoundingBox {
                 _ => td.scene_rect.h
             };
             td.scene_rect = Rect{x, y, w, h};
+            let diag = Vector2::new(WINDOWWIDTH, WINDOWHEIGHT);
+            let dd = camera.projection().world_to_screen(Point3::new(td.scene_rect.x as f32, td.scene_rect.y as f32, 0.0), diag, camera_transform);
         }
     }
 }

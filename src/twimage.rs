@@ -1,6 +1,7 @@
 use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture, Sprite,
     rendy::texture::TextureBuilder, Transparent,
     rendy::hal::image::{Kind, ViewKind, Filter, WrapMode, Anisotropic, SamplerInfo, PackedColor},
+    rendy::hal::format,
     types::TextureData,
     Format,
     };
@@ -72,18 +73,20 @@ impl Component for TwImage {
 
 
 
-pub fn get_color_type(color: &ColorType) -> Format {
+pub fn get_color_type(color: &ColorType) -> (Format, format::Swizzle) {
     match color {
-        ColorType::RGB(8) => Format::Rgb8Srgb,
-        ColorType::RGBA(8) => Format::Rgba8Srgb,
-        _ => Format::Rgb8Unorm
+        ColorType::RGB(8) => (Format::Rgb8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
+        ColorType::RGBA(8) => (Format::Rgba8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
+        ColorType::Gray(8) => (Format::R8Unorm, format::Swizzle(format::Component::R, format::Component::R, format::Component::R, format::Component::A)),
+        _ => (Format::Rgb8Unorm, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A))
     }
 }
 
 pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
     let dimensions = img.dimensions();
-    let pixels = match get_color_type(&img.color()) {
+    let (color_type, swizzle) = get_color_type(&img.color());
+    let pixels = match color_type {
         Format::Rgba8Srgb => premultiply_by_alpha(&img.raw_pixels()),
         _ => img.raw_pixels()};
     let texture_builder = TextureBuilder::new()
@@ -105,7 +108,8 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
             border: PackedColor(0),
             anisotropic: Anisotropic::Off,
             })
-        .with_raw_data(Cow::Owned(pixels), get_color_type(&img.color()));
+        .with_raw_data(Cow::Owned(pixels), color_type)
+        .with_swizzle(swizzle);
     (TwImage::new(dimensions.0, dimensions.1, name), TextureData(texture_builder))
 }
 

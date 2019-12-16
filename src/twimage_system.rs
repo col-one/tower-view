@@ -119,10 +119,15 @@ impl<'s> System<'s> for TwImageLayoutSystem {
         sprite_sheets
     ): Self::SystemData) {
         if input.key_is_down(VirtualKeyCode::L) {
+            let twimage_count = tw_images.count() as f32;
+            let xy_limit = match twimage_count.sqrt() {
+                xy_limit if xy_limit < 2.0 => 2.0,
+                _ => twimage_count.sqrt()
+            };
             let mut i = 0;
-            'out: for x in 0..2 {
-                    for y in 0..2 {
-                        if i >= tw_images.count() { break 'out }
+            'out: for x in 0..xy_limit as usize {
+                    for y in 0..xy_limit as usize {
+                        if i >= twimage_count as usize { break 'out }
                         let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
                         let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                         let sprite = &sprite_sheet.sprites[sprite.sprite_number];
