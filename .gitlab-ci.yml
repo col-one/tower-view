@@ -2,7 +2,7 @@ image: 'rust:latest'
 
 stages:
   - test
-  - doc
+  - test2
   - build
 
 variables:
