@@ -22,7 +22,7 @@ build:
     - target/release/tower
 
 package:
-  stage: pacakge
+  stage: package
   script:
   -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C target/release tower
   artifacts:
