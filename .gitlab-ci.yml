@@ -1,7 +1,8 @@
 image: 'rust:latest'
 
-#stages:
-#  - test
+stages:
+ - build
+ - package
 
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
@@ -11,7 +12,7 @@ before_script:
   - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
 
 build:
-# stage: build
+  stage: build
   script:
     - rustc --version
     - cargo --version
@@ -21,10 +22,12 @@ build:
     - target/release/tower
 
 package:
-  script: cat file1.txt file2.txt | gzip > packaged.gz
+  stage: pacakge
+  script:
+  -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C target/release tower
   artifacts:
     paths:
-    - packaged.gz
+    - tower.$CI_COMMIT_SHA.tar.gz
     
 #test2:
 #  stage: test2
