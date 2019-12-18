@@ -24,7 +24,7 @@ build:
 package:
   stage: package
   script:
-  -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C target/release tower
+  -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C target/release tower
   artifacts:
     paths:
     - tower.$CI_COMMIT_SHA.tar.gz
