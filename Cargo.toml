@@ -1,8 +1,10 @@
 [package]
 name = "tower"
 version = "0.1.0"
-authors = []
+authors = ["Colob"]
 edition = "2018"
+license = "Apache-2.0 OR MIT"
+description = "Tower is a simple viewer made for cg animation and vfx, with some new concepts."
 
 [dependencies]
 image = "0.22.3"
@@ -12,3 +14,9 @@ structopt = { version = "0.3.5", default_features = false, features = ["color", 
 [dependencies.amethyst]
 version = "0.13"
 features = ["vulkan"]
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+tower = { path = "/usr/bin/tower" }

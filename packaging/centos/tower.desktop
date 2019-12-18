@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=0.0.1a
+Name=Tower
+Exec=/opt/tower/tower %F
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Graphics;

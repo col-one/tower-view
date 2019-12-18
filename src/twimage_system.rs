@@ -124,6 +124,7 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                 xy_limit if xy_limit < 2.0 => 2.0,
                 _ => twimage_count.sqrt()
             };
+            let offset = 10.0;
             let mut i = 0;
             'out: for x in 0..xy_limit as usize {
                     for y in 0..xy_limit as usize {
@@ -131,8 +132,8 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                         let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
                         let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                         let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-                        transform.set_translation_x(sprite.width * x as f32);
-                        transform.set_translation_y(sprite.height * y as f32);
+                        transform.set_translation_x((sprite.width + offset) * x as f32);
+                        transform.set_translation_y((sprite.height + offset) * y as f32);
                         i += 1;
                 }
             }
