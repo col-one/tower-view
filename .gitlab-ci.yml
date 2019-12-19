@@ -8,8 +8,8 @@ variables:
   CARGO_HOME: $CI_PROJECT_DIR/cargo
 
 before_script:
-  - apt-get update -y
-  - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
+  - yum update -y
+  - yum install alsa-lib-devel -y
 
 build:
   stage: build
