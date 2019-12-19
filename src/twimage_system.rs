@@ -1,4 +1,4 @@
-use amethyst::core::{SystemDesc, Transform, math::{Point2, Vector2}};
+use amethyst::core::{SystemDesc, Transform, math::{Point2, Vector2}, Stopwatch};
 use amethyst::derive::SystemDesc;
 use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings};
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
@@ -9,35 +9,38 @@ use amethyst::renderer::{camera::{ActiveCamera, Camera, Projection},
                         sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat}, };
 use amethyst::assets::{AssetStorage};
 
-use crate::twimage::TwImage;
-use crate::twinputshandler::TwInputHandler;
-use crate::twutils::point_in_rect;
-
-use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 use uuid::Uuid;
 use std::{thread, time};
 
+use crate::twimage::TwImage;
+
+use crate::twinputshandler::TwInputHandler;
+use crate::twutils::point_in_rect;
+use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
+use log;
 
 #[derive(SystemDesc)]
-pub struct TwImageMoveSystem;
+pub struct TwImageActiveSystem;
 
-impl<'s> System<'s> for TwImageMoveSystem {
+impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Read<'s, InputHandler<StringBindings>>,
                        Write<'s, World>,
                        ReadStorage<'s, TwImage>,
-                       WriteStorage<'s, Transform>,
+                       ReadStorage<'s, Transform>,
                        ReadStorage<'s, SpriteRender>,
-                       Read<'s, AssetStorage<SpriteSheet>>, );
+                       Read<'s, AssetStorage<SpriteSheet>>,
+                       Entities<'s>);
     fn run(&mut self, (
-            input,
-            mut world,
-            tw_images,
-            mut transforms,
-            sprites,
-            sprite_sheets
-        ): Self::SystemData) {
+        input,
+        mut world,
+        tw_images,
+        transforms,
+        sprites,
+        sprite_sheets,
+        entities
+    ): Self::SystemData) {
         let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
-        for (sprite, transform, tw_image) in (&sprites, &mut transforms, &tw_images).join() {
+        for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &tw_images, &*entities).join() {
             let mouse_world_position = tw_input_handler.mouse_world_pos;
             let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -49,6 +52,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
                     transform.translation().y + (sprite.height * 0.5),
                 )
             };
+            // if mouse inside sprite
             if mouse_world_position.x > min_x
                 && mouse_world_position.x < max_x
                 && mouse_world_position.y > min_y
@@ -63,14 +67,39 @@ impl<'s> System<'s> for TwImageMoveSystem {
                     tw_input_handler.twimages_under_mouse.remove(index);
                 }
             }
+            // set as active image the highest image z order
             tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.cmp(&a.1));
+            if tw_input_handler.twimages_under_mouse.is_empty() {
+                tw_input_handler.set_twimage_active(None);
+            }
+        }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct TwImageMoveSystem;
+
+impl<'s> System<'s> for TwImageMoveSystem {
+    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+                       Write<'s, World>,
+                       ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, Transform>,
+                       ReadStorage<'s, SpriteRender>,
+                       Read<'s, AssetStorage<SpriteSheet>>,
+                       Entities<'s>);
+    fn run(&mut self, (
+            input,
+            mut world,
+            tw_images,
+            mut transforms,
+            sprites,
+            sprite_sheets,
+            entities
+        ): Self::SystemData) {
+        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
+        for (sprite, transform, tw_image, entity) in (&sprites, &mut transforms, &tw_images, &*entities).join() {
             if input.key_is_down(VirtualKeyCode::LAlt) && input.mouse_button_is_down(MouseButton::Left) {
-                // set as active image the highest image z order
-                if tw_input_handler.twimage_active.is_none() {
-                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-                        tw_input_handler.set_twimage_active(Some(tw_image.id));
-                    }
-                }
                 // trace vector to move image
                 if tw_input_handler.last_mouse_pos.is_none() {
                     let world_pos = {
@@ -78,7 +107,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
                     };
                     tw_input_handler.set_last_mouse_pos(world_pos);
                 }
-                if tw_input_handler.twimage_active == Some(tw_image.id) {
+                if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
                     let world_pos = {
                         Some((tw_input_handler.mouse_world_pos.x, tw_input_handler.mouse_world_pos.y))
                     };
@@ -94,9 +123,19 @@ impl<'s> System<'s> for TwImageMoveSystem {
             // reset of position data mouse and active image
             } else if input.key_is_down(VirtualKeyCode::LAlt) {
                 tw_input_handler.set_last_mouse_pos(None);
-                tw_input_handler.set_twimage_active(None);
                 tw_input_handler.last_mouse_dist = (0.0, 0.0);
             }
+//            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
+//                if input.key_is_down(VirtualKeyCode::P) {
+//                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+//                        info!("delete {:?}", entity);
+//                        let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
+//                        tw_input_handler.twimages_under_mouse.remove(index);
+//                        entities.delete(entity).unwrap();
+//                        tw_input_handler.stopwatch.restart();
+//                    }
+//                }
+//            }
         }
     }
 }
@@ -135,6 +174,38 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                         transform.set_translation_x((sprite.width + offset) * x as f32);
                         transform.set_translation_y((sprite.height + offset) * y as f32);
                         i += 1;
+                }
+            }
+        }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct TwImageDeleteSystem;
+
+impl<'s> System<'s> for TwImageDeleteSystem {
+    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+                       Write<'s, World>,
+                       ReadStorage<'s, TwImage>,
+                       Entities<'s>);
+    fn run(&mut self, (
+        input,
+        mut world,
+        tw_images,
+        entities
+    ): Self::SystemData) {
+        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
+        for (tw_image, entity) in (&tw_images, &*entities).join() {
+            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
+                if input.key_is_down(VirtualKeyCode::Delete) {
+                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+                        info!("TwImage is deleting, {:?}", entity);
+                        let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
+                        tw_input_handler.twimages_under_mouse.remove(index);
+                        entities.delete(entity).unwrap();
+                        tw_input_handler.stopwatch.restart();
+                    }
                 }
             }
         }

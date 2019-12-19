@@ -1,7 +1,7 @@
 use amethyst::prelude::*;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
-use amethyst::core::math::{dimension::U3, Point3};
+use amethyst::core::{Stopwatch, math::{dimension::U3, Point3}};
 use amethyst::{
         winit::{VirtualKeyCode, Event, WindowEvent},
 };
@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::twimage::TwImage;
 
 pub struct TwInputHandler {
+    pub stopwatch: Stopwatch,
     pub last_mouse_pos: Option<(f32, f32)>,
     pub last_mouse_dist: (f32, f32),
     pub mouse_world_pos: Point3<f32>,
@@ -17,9 +18,13 @@ pub struct TwInputHandler {
     pub twimage_active: Option<Uuid>,
 }
 
+
 impl Default for TwInputHandler {
     fn default() -> Self {
+        let mut timer = Stopwatch::new();
+        timer.start();
         TwInputHandler {
+            stopwatch: timer,
             last_mouse_pos: None,
             last_mouse_dist: (0.0, 0.0),
             mouse_world_pos: Point3::new(0.0, 0.0, 0.0),
@@ -39,6 +44,12 @@ impl TwInputHandler {
     }
     pub fn set_twimage_active(&mut self, uuid: Option<Uuid>) {
         self.twimage_active = uuid;
+    }
+    pub fn set_default(&mut self) {
+        self.last_mouse_pos = None;
+        self.last_mouse_dist = (0.0,0.0);
+        self.mouse_world_pos = Point3::new(0.0, 0.0, 0.0);
+        self.twimage_active = None;
     }
 }
 

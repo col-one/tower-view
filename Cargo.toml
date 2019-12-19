@@ -10,6 +10,9 @@ description = "Tower is a simple viewer made for cg animation and vfx, with some
 image = "0.22.3"
 cgmath = "0.17.0"
 uuid = "0.7.0"
+log = "0.4.8"
+chrono = "0.4.10"
+env_logger = "0.7.1"
 structopt = { version = "0.3.5", default_features = false, features = ["color", "wrap_help", "doc"] }
 [dependencies.amethyst]
 version = "0.13"
