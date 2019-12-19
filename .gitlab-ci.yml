@@ -44,7 +44,7 @@ build:ubuntu:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
       
 test:centos:
-    image: 'lambdastack/rust-centos:latest'
+    image: 'centos:7'
     stage: test
     script:
       - echo CACA
