@@ -37,7 +37,7 @@ build:ubuntu:
     - cargo --version
     - cargo build --release
     # - chmod +x packaging/centos/install.sh
-    - tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C /target/release tower
+    - tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C target/release tower
   artifacts:
     paths:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
