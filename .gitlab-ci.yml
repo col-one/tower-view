@@ -16,7 +16,7 @@ build:centos7:
   before_script:
     - yum update -y
     - yum install alsa-lib-devel -y
-    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -y
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -- -y
   script:
     - rustc --version
     - cargo --version
