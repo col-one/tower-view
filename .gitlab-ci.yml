@@ -1,4 +1,4 @@
-centos7:
+default:
     image: 'lambdastack/rust-centos:latest'
     
     stages:
