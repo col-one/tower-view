@@ -1,37 +1,38 @@
-image: 'lambdastack/rust-centos:latest'
-
-stages:
- - build
- - package
-
-variables:
-  CARGO_HOME: $CI_PROJECT_DIR/cargo
-
-before_script:
-  - yum update -y
-  - yum install alsa-lib-devel -y
-
-build:
-  stage: build
-  script:
-    - rustc --version
-    - cargo --version
-    - cargo build --release
-  artifacts:
-    paths:
-    - target/release/tower
-
-package:
-  stage: package
-  script:
-  -  chmod +x packaging/centos/install.sh
-  -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
-  artifacts:
-    paths:
-    - tower.$CI_COMMIT_SHA.tar.gz
-
-cache:
-  paths:
-    - apt/
-    - cargo/
-    - target/
+centos7:
+    image: 'lambdastack/rust-centos:latest'
+    
+    stages:
+     - build
+     - package
+    
+    variables:
+      CARGO_HOME: $CI_PROJECT_DIR/cargo
+    
+    before_script:
+      - yum update -y
+      - yum install alsa-lib-devel -y
+    
+    build:
+      stage: build
+      script:
+        - rustc --version
+        - cargo --version
+        - cargo build --release
+      artifacts:
+        paths:
+        - target/release/tower
+    
+    package:
+      stage: package
+      script:
+      -  chmod +x packaging/centos/install.sh
+      -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
+      artifacts:
+        paths:
+        - tower.$CI_COMMIT_SHA.tar.gz
+    
+    cache:
+      paths:
+        - apt/
+        - cargo/
+        - target/
