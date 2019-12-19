@@ -6,7 +6,7 @@ cache:
     - cargo/
     - target/
 
-stage:
+stages:
   - build
   - test
 
