@@ -1,6 +1,10 @@
 default:
-    image: 'lambdastack/rust-centos:latest'
+    before_script:
+     - bundle install
     
+centos7:
+    image: 'lambdastack/rust-centos:latest'
+
     stages:
      - build
      - package
