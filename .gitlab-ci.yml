@@ -15,7 +15,7 @@ build:centos7:
   stage: build
   before_script:
     - yum update -y
-    - yum install alsa-lib-devel libX11-devel freetype freetype-devel cmake expat -y
+    - yum install alsa-lib-devel libX11-devel freetype freetype-devel cmake expat libxml2-devel -y
     # - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
     # - set PATH=~/.cargo/bin:$PATH
   script:
