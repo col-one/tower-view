@@ -11,11 +11,12 @@ stages:
   - test
 
 build:centos7:
-  image: 'lambdastack/rust-centos:latest'
+  image: 'centos7:latest'
   stage: build
   before_script:
     - yum update -y
     - yum install alsa-lib-devel -y
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   script:
     - rustc --version
     - cargo --version
