@@ -11,7 +11,7 @@ stages:
   - test
 
 build:centos7:
-  image: 'centos7:latest'
+  image: 'centos:7'
   stage: build
   before_script:
     - yum update -y
