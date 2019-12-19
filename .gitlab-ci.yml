@@ -11,17 +11,17 @@ stages:
   - test
 
 build:centos7:
-  image: 'centos:7'
+  image: 'accuminium/rust-centos:latest'
   stage: build
   before_script:
     - yum update -y
     - yum install alsa-lib-devel -y
-    - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
-    - set PATH=~/.cargo/bin:$PATH
+    # - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
+    # - set PATH=~/.cargo/bin:$PATH
   script:
-    - ~/.cargo/bin/rustc --version
-    - ~/.cargo/bin/cargo --version
-    - ~/.cargo/bin/cargo build --release
+    - rustc --version
+    - cargo --version
+    - cargo build --release
     - chmod +x packaging/centos/install.sh
     - tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
   artifacts:
