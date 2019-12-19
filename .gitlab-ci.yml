@@ -1,42 +1,40 @@
-default:
-    before_script:
-     - bundle install
-    
-test:centos7:
-    image: 'lambdastack/rust-centos:latest'
 
-    stages:
-     - build
-     - package
-    
-    variables:
-      CARGO_HOME: $CI_PROJECT_DIR/cargo
-    
-    before_script:
-      - yum update -y
-      - yum install alsa-lib-devel -y
-    
-    build:
-      stage: build
-      script:
-        - rustc --version
-        - cargo --version
-        - cargo build --release
-      artifacts:
-        paths:
-        - target/release/tower
-    
-    package:
-      stage: package
-      script:
-      -  chmod +x packaging/centos/install.sh
-      -  tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
-      artifacts:
-        paths:
-        - tower.$CI_COMMIT_SHA.tar.gz
-    
-    cache:
-      paths:
-        - apt/
-        - cargo/
-        - target/
+variables: 
+  CARGO_HOME: $CI_PROJECT_DIR/cargo
+
+cache:
+  paths:
+    - cargo/
+    - target/
+
+buildcentos7:
+  image: 'lambdastack/rust-centos:latest'
+#   stage: buildcentos7
+  before_script:
+    - yum update -y
+    - yum install alsa-lib-devel -y
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo build --release
+    - chmod +x packaging/centos/install.sh
+    - tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
+  artifacts:
+    paths:
+      - tower.centos7.$CI_COMMIT_SHA.tar.gz
+
+buildubuntu:
+  image: 'rust:latest'
+#   stage: buildubuntu
+  before_script:
+    - apt-get update -y
+    - apt-get install libasound2-dev libxcb-xrm-dev libxcb-xfixes0-dev libxcb-shape0-dev -y
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo build --release
+    # - chmod +x packaging/centos/install.sh
+    - tar -czvf tower.$CI_COMMIT_SHA.tar.gz config -C /target/release tower
+  artifacts:
+    paths:
+      - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
