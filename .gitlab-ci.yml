@@ -17,6 +17,7 @@ build:centos7:
     - yum update -y
     - yum install alsa-lib-devel -y
     - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
+    - set PATH=/root/.cargo/bin:$PATH
   script:
     - rustc --version
     - cargo --version
