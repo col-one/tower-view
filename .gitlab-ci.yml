@@ -15,7 +15,7 @@ build:centos7:
   stage: build
   before_script:
     - yum update -y
-    - yum install alsa-lib-devel libX11-devel freetype freetype-devel cmake expat expat-devel libxml2-devel python36u python36u-libs xcb-util-devel python36u-devel python36u-pip xcb-util -y
+    - yum install alsa-lib-devel libX11-devel freetype freetype-devel cmake expat expat-devel libxml2-devel python3 python3-libs xcb-util-devel python3-devel python3-pip xcb-util -y
     # - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
     # - set PATH=~/.cargo/bin:$PATH
   script:
