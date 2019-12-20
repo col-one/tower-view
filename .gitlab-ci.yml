@@ -49,6 +49,6 @@ test:centos:
     stage: test
     script:
       - echo CACA
-      - ll .
+      - ls -l .
     dependencies:
       - build:centos7
