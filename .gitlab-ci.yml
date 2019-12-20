@@ -23,7 +23,7 @@ build:centos7:
     - cargo --version
     - cargo build --release
     - chmod +x packaging/centos/install.sh
-    - tar -czvf tower.centos7.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower7
+    - tar -czvf tower.centos7.$CI_COMMIT_SHA.tar.gz config -C packaging centos -C ../target/release tower
   artifacts:
     paths:
       - tower.centos7.$CI_COMMIT_SHA.tar.gz
