@@ -21,7 +21,7 @@ pub fn initialise_camera(world: &mut World) {
     transform.set_translation_xyz(0.0, 0.0, WINDOWHEIGHT);
     let cam_entity = world.create_entity()
         .with(TwCamera)
-        .with(Camera::standard_3d(WINDOWWIDTH, WINDOWHEIGHT))
+        .with(Camera::standard_2d(WINDOWWIDTH, WINDOWHEIGHT))
         .with(transform)
         .build();
 }

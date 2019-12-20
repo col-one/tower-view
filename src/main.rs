@@ -35,7 +35,7 @@ use crate::twargs_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                              CameraZoomNavigationSystem, CameraFitNavigationSystem};
-use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem};
+use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem, TwImageToFrontSystem, TwImageUpdateZSystem};
 use crate::twraycasting_system::TwMouseRaycastSystem;
 use crate::twscene_system::{SceneBoundingBox};
 
@@ -66,18 +66,20 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
         .with_bundle(RenderingBundle::<DefaultBackend>::new()
-                .with_plugin(RenderToWindow::from_config_path(display_config_path)
-                        .with_clear(BACKGROUNDCOLOR),)
-                .with_plugin(RenderFlat2D::default()))?
+            .with_plugin(RenderToWindow::from_config_path(display_config_path)
+                             .with_clear(BACKGROUNDCOLOR),)
+            .with_plugin(RenderFlat2D::default()))?
         .with(CameraTranslateNavigationSystem, "camera_translate_system", &["input_system"])
-        .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system"])
-        .with(CameraZoomNavigationSystem, "camera_zoom_system", &["input_system"])
-        .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system"])
-        .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
         .with(TwImageActiveSystem, "image_active_system", &["input_system"])
+        .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system", "image_active_system"])
+        .with(CameraZoomNavigationSystem, "camera_zoom_system", &["input_system", "image_active_system"])
+        .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system", "image_active_system"])
+        .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
         .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
-//        .with(SceneBoundingBox, "scene_bounding_system", &["input_system"])
+        .with(SceneBoundingBox, "scene_bounding_system", &["input_system", "image_active_system"])
+        .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
+//        .with(TwImageUpdateZSystem, "image_updatez_system", &["input_system", "image_active_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"]);
 
     let assets_dir = app_root.join("assets");

@@ -125,17 +125,6 @@ impl<'s> System<'s> for TwImageMoveSystem {
                 tw_input_handler.set_last_mouse_pos(None);
                 tw_input_handler.last_mouse_dist = (0.0, 0.0);
             }
-//            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
-//                if input.key_is_down(VirtualKeyCode::P) {
-//                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-//                        info!("delete {:?}", entity);
-//                        let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
-//                        tw_input_handler.twimages_under_mouse.remove(index);
-//                        entities.delete(entity).unwrap();
-//                        tw_input_handler.stopwatch.restart();
-//                    }
-//                }
-//            }
         }
     }
 }
@@ -208,6 +197,67 @@ impl<'s> System<'s> for TwImageDeleteSystem {
                     }
                 }
             }
+        }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct TwImageToFrontSystem;
+
+impl<'s> System<'s> for TwImageToFrontSystem {
+    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+                       Write<'s, World>,
+                       ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, Transform>,
+                       ReadStorage<'s, SpriteRender>,);
+    fn run(&mut self, (
+        input,
+        mut world,
+        tw_images,
+        mut transforms,
+        sprites
+    ): Self::SystemData) {
+        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
+        let mut images = {
+            let (img) = (&tw_images).join();
+            img.map(|t| t).collect::<Vec<_>>()
+        };
+        for (tw_image, transform, _) in (&tw_images, &mut transforms, &sprites).join() {
+            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
+                if input.key_is_down(VirtualKeyCode::F) && input.key_is_down(VirtualKeyCode::LShift) {
+                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+                        images.sort_by(|a, b| a.z_order.cmp(&b.z_order));
+                        let current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
+                        let pop = images.swap_remove(current_index);
+                        images.push(pop);
+                        info!("TwImage is bringing to front, {:?} {:?}", tw_image.id, transform);
+                        transform.set_translation_z(images.iter().count() as f32);
+                    } else if !tw_input_handler.twimages_under_mouse.is_empty() {
+                        transform.set_translation_z(0.0);
+                    }
+                    tw_input_handler.stopwatch.restart();
+//                    info!("{:?} {:?}", transform.translation().z, tw_image.z_order);
+//                    info!("{:?}", tw_input_handler.twimages_under_mouse);
+                }
+            }
+        }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct TwImageUpdateZSystem;
+
+impl<'s> System<'s> for TwImageUpdateZSystem {
+    type SystemData = (WriteStorage<'s, TwImage>,
+                       WriteStorage<'s, Transform>);
+    fn run(&mut self, (
+        mut tw_images,
+        mut transforms
+    ): Self::SystemData) {
+        for (tw_image, transform) in (&mut tw_images, &mut transforms).join() {
+            tw_image.z_order = transform.translation().z as u8;
         }
     }
 }

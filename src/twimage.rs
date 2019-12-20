@@ -135,10 +135,11 @@ pub fn create_sprite_sheet(world: &mut World, texture_data: TextureData, tw_imag
     )
 }
 
-pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>) {
+pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>, init_z: u8) {
     let mut transform = Transform::default();
     transform.set_translation_x( 0.0);
     transform.set_translation_y( 0.0);
+    transform.set_translation_z( init_z as f32);
     let sprite_render = SpriteRender {
         sprite_sheet: sprite_sheet.clone(),
         sprite_number: 0,
@@ -165,7 +166,7 @@ pub fn load_image_from_inputs_arg(world: &mut World) {
         let (mut tw_image, texture_data) = load_texture_from_file(&path.path);
         let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
         tw_image.z_order = z_count;
-        create_entity_twimage(world, tw_image, sprite_sheet);
+        create_entity_twimage(world, tw_image, sprite_sheet, z_count);
         z_count += 1;
     }
         let mut td = world.fetch_mut::<TowerData>();
@@ -180,7 +181,7 @@ pub fn load_image_from_path(world: &mut World, path: &str) {
     let (mut tw_image, texture_data) = load_texture_from_file(path);
     let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
     tw_image.z_order = z_count;
-    create_entity_twimage(world, tw_image, sprite_sheet);
+    create_entity_twimage(world, tw_image, sprite_sheet, z_count);
     z_count += 1;
     let mut td = world.fetch_mut::<TowerData>();
     td.twimage_count = z_count;
