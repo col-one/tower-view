@@ -26,7 +26,7 @@ pub struct TwImageActiveSystem;
 impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Read<'s, InputHandler<StringBindings>>,
                        Write<'s, World>,
-                       ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, TwImage>,
                        ReadStorage<'s, Transform>,
                        ReadStorage<'s, SpriteRender>,
                        Read<'s, AssetStorage<SpriteSheet>>,
@@ -34,14 +34,14 @@ impl<'s> System<'s> for TwImageActiveSystem {
     fn run(&mut self, (
         input,
         mut world,
-        tw_images,
+        mut tw_images,
         transforms,
         sprites,
         sprite_sheets,
         entities
     ): Self::SystemData) {
         let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
-        for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &tw_images, &*entities).join() {
+        for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
             let mouse_world_position = tw_input_handler.mouse_world_pos;
             let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -73,6 +73,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
             if tw_input_handler.twimages_under_mouse.is_empty() {
                 tw_input_handler.set_twimage_active(None);
             }
+            tw_image.z_order = transform.translation().z;
         }
     }
 }
@@ -222,43 +223,26 @@ impl<'s> System<'s> for TwImageToFrontSystem {
         let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
         let mut images = {
             let (img) = (&tw_images).join();
-            img.map(|t| t).collect::<Vec<_>>()
+            let mut images = img.map(|t| t).collect::<Vec<_>>();
+            images.sort_by(|a, b| a.z_order.partial_cmp(&b.z_order).unwrap_or(Equal));
+            images
         };
         for (tw_image, transform, _) in (&tw_images, &mut transforms, &sprites).join() {
-            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
-                if input.key_is_down(VirtualKeyCode::F) && input.key_is_down(VirtualKeyCode::LShift) {
+            let mut current_index = tw_image.z_order as usize;
+            if input.key_is_down(VirtualKeyCode::F) && input.key_is_down(VirtualKeyCode::LShift) {
+                if time::Duration::from_millis(500) <= tw_input_handler.stopwatch.elapsed() {
                     if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-                        images.sort_by(|a, b| a.z_order.cmp(&b.z_order));
-                        let current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
-                        let pop = images.swap_remove(current_index);
+                        let i = images.iter().position(|x| x.id == tw_image.id).unwrap();
+                        let pop = images.swap_remove(i);
                         images.push(pop);
-                        info!("TwImage is bringing to front, {:?} {:?}", tw_image.id, transform);
-                        transform.set_translation_z(images.iter().count() as f32);
-                    } else if !tw_input_handler.twimages_under_mouse.is_empty() {
-                        transform.set_translation_z(0.0);
+                        current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
+                        tw_input_handler.stopwatch.restart();
                     }
-                    tw_input_handler.stopwatch.restart();
-//                    info!("{:?} {:?}", transform.translation().z, tw_image.z_order);
-//                    info!("{:?}", tw_input_handler.twimages_under_mouse);
                 }
             }
+            current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
+            transform.set_translation_z(current_index as f32);
         }
     }
 }
 
-
-#[derive(SystemDesc)]
-pub struct TwImageUpdateZSystem;
-
-impl<'s> System<'s> for TwImageUpdateZSystem {
-    type SystemData = (WriteStorage<'s, TwImage>,
-                       WriteStorage<'s, Transform>);
-    fn run(&mut self, (
-        mut tw_images,
-        mut transforms
-    ): Self::SystemData) {
-        for (tw_image, transform) in (&mut tw_images, &mut transforms).join() {
-            tw_image.z_order = transform.translation().z as u8;
-        }
-    }
-}

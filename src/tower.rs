@@ -20,14 +20,14 @@ pub const WINDOWHEIGHT: f32 = 720.0;
 
 
 pub struct TowerData {
-    pub twimage_count: u8,
+    pub twimage_count: f32,
     pub scene_rect: Rect,
 }
 
 impl Default for TowerData {
     fn default() -> Self {
         Self {
-            twimage_count: 0u8,
+            twimage_count: 0.0,
             scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16},
         }
     }
@@ -43,7 +43,7 @@ impl<'a> SimpleState for Tower {
         let opt = Opt::from_args();
         world.insert(opt);
         // init tower data
-        let mut tower_data = TowerData{twimage_count: 0u8, scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16}};
+        let mut tower_data = TowerData{twimage_count: 0.0, scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16}};
         world.insert(tower_data);
         // load image from inputs arg
         twimage::load_image_from_inputs_arg(world);

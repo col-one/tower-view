@@ -43,7 +43,7 @@ pub struct TwImage {
     pub height: u32,
     pub file_name: String,
     pub ratio: f32,
-    pub z_order: u8,
+    pub z_order: f32,
 }
 
 impl  TwImage {
@@ -55,7 +55,7 @@ impl  TwImage {
             height,
             file_name: file_name.to_owned(),
             ratio,
-            z_order: 0,
+            z_order: 0.0,
             id,
         }
     }
@@ -135,7 +135,7 @@ pub fn create_sprite_sheet(world: &mut World, texture_data: TextureData, tw_imag
     )
 }
 
-pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>, init_z: u8) {
+pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>, init_z: f32) {
     let mut transform = Transform::default();
     transform.set_translation_x( 0.0);
     transform.set_translation_y( 0.0);
@@ -167,7 +167,7 @@ pub fn load_image_from_inputs_arg(world: &mut World) {
         let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
         tw_image.z_order = z_count;
         create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-        z_count += 1;
+        z_count += 1.0;
     }
         let mut td = world.fetch_mut::<TowerData>();
         td.twimage_count = z_count;
@@ -182,7 +182,7 @@ pub fn load_image_from_path(world: &mut World, path: &str) {
     let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
     tw_image.z_order = z_count;
     create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-    z_count += 1;
+    z_count += 1.0;
     let mut td = world.fetch_mut::<TowerData>();
     td.twimage_count = z_count;
 }

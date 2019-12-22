@@ -35,7 +35,7 @@ use crate::twargs_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                              CameraZoomNavigationSystem, CameraFitNavigationSystem};
-use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem, TwImageToFrontSystem, TwImageUpdateZSystem};
+use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem, TwImageToFrontSystem};
 use crate::twraycasting_system::TwMouseRaycastSystem;
 use crate::twscene_system::{SceneBoundingBox};
 
@@ -79,7 +79,6 @@ fn main() -> amethyst::Result<()> {
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
         .with(SceneBoundingBox, "scene_bounding_system", &["input_system", "image_active_system"])
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
-//        .with(TwImageUpdateZSystem, "image_updatez_system", &["input_system", "image_active_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"]);
 
     let assets_dir = app_root.join("assets");
