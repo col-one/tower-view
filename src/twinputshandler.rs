@@ -16,7 +16,7 @@ pub struct TwInputHandler {
     pub last_mouse_pos: Option<(f32, f32)>,
     pub last_mouse_dist: (f32, f32),
     pub mouse_world_pos: Point3<f32>,
-    pub twimages_under_mouse: Vec<(Uuid, u8)>,
+    pub twimages_under_mouse: Vec<(Uuid, f32)>,
     pub twimage_active: Option<Uuid>,
     pub z: f32,
 }

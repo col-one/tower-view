@@ -18,6 +18,7 @@ use crate::twinputshandler::TwInputHandler;
 use crate::twutils::point_in_rect;
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 use log;
+use std::cmp::Ordering::Equal;
 
 #[derive(SystemDesc)]
 pub struct TwImageActiveSystem;
@@ -59,7 +60,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
                 && mouse_world_position.y < max_y
             {
                 if !tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
-                    tw_input_handler.twimages_under_mouse.push((tw_image.id, tw_image.z_order));
+                    tw_input_handler.twimages_under_mouse.push((tw_image.id, transform.translation().z));
                 }
             } else {
                 if tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
@@ -68,7 +69,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
                 }
             }
             // set as active image the highest image z order
-            tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.cmp(&a.1));
+            tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Equal));
             if tw_input_handler.twimages_under_mouse.is_empty() {
                 tw_input_handler.set_twimage_active(None);
             }
