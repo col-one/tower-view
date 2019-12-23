@@ -6,7 +6,10 @@ use amethyst::ecs::prelude::*;
 use amethyst::window::ScreenDimensions;
 use amethyst::renderer::rendy::wsi::winit::MouseButton;
 use amethyst::renderer::{camera::{ActiveCamera, Camera, Projection},
-                        sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat}, };
+                        sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat},
+                        resources::Tint,
+                        palette::Srgba,
+};
 use amethyst::assets::{AssetStorage};
 
 use uuid::Uuid;
@@ -15,7 +18,6 @@ use std::{thread, time};
 use crate::twimage::TwImage;
 
 use crate::twinputshandler::TwInputHandler;
-use crate::twutils::point_in_rect;
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT};
 use log;
 use std::cmp::Ordering::Equal;
@@ -246,3 +248,58 @@ impl<'s> System<'s> for TwImageToFrontSystem {
     }
 }
 
+
+#[derive(SystemDesc)]
+pub struct TwImageChangeAlphaSystem;
+
+impl<'s> System<'s> for TwImageChangeAlphaSystem {
+    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+                       Write<'s, World>,
+                       WriteStorage<'s, TwImage>,
+                       WriteStorage<'s, Tint>,);
+    fn run(&mut self, (
+        input,
+        mut world,
+        mut tw_images,
+        mut tints
+    ): Self::SystemData) {
+        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
+        for (tw_image, tint) in (&mut tw_images, &mut tints).join() {
+            if input.key_is_down(VirtualKeyCode::A) &&
+                input.key_is_down(VirtualKeyCode::LShift) &&
+                input.mouse_button_is_down(MouseButton::Left) {
+                if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
+                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+                        if tw_input_handler.last_mouse_pos.is_none() {
+                            tw_input_handler.set_last_mouse_pos(input.mouse_position());
+                        } else {
+                            let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
+                            let (x2, y2) = input.mouse_position().unwrap();
+                            let dist = Vector2::new((x2 - x), (y2 - y));
+                            let delta = Vector2::new(dist.x - tw_input_handler.last_mouse_dist.0, dist.y - tw_input_handler.last_mouse_dist.1);
+                            tw_image.alpha = (tw_image.alpha - (delta.x * 0.001)).max(0.0).min(1.0);
+                            info!("{:?}", tw_image.alpha);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+#[derive(SystemDesc)]
+pub struct TwImageApplyBlendingSystem;
+
+impl<'s> System<'s> for TwImageApplyBlendingSystem {
+    type SystemData = (ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, Tint>,);
+    fn run(&mut self, (
+        tw_images,
+        mut tints
+    ): Self::SystemData) {
+        for (tw_image, tint) in (&tw_images, &mut tints).join() {
+            *tint = Tint(Srgba::new(1.0, 1.0, 1.0, tw_image.alpha));
+        }
+    }
+}

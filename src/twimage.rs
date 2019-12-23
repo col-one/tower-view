@@ -4,6 +4,8 @@ use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteS
     rendy::hal::format,
     types::TextureData,
     Format,
+    resources::Tint,
+    palette::Srgba,
     };
 use amethyst::core::transform::Transform;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage};
@@ -17,7 +19,7 @@ use std::path::PathBuf;
 
 
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
-use crate::twutils::premultiply_by_alpha;
+use crate::twutils::{premultiply_by_alpha, add_alpha_channel};
 use crate::twargs_cli::Opt;
 
 
@@ -44,6 +46,7 @@ pub struct TwImage {
     pub file_name: String,
     pub ratio: f32,
     pub z_order: f32,
+    pub alpha: f32,
 }
 
 impl  TwImage {
@@ -57,6 +60,7 @@ impl  TwImage {
             ratio,
             z_order: 0.0,
             id,
+            alpha: 1.0,
         }
     }
 }
@@ -75,7 +79,7 @@ impl Component for TwImage {
 
 pub fn get_color_type(color: &ColorType) -> (Format, format::Swizzle) {
     match color {
-        ColorType::RGB(8) => (Format::Rgb8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
+        ColorType::RGB(8) => (Format::Rgba8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
         ColorType::RGBA(8) => (Format::Rgba8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
         ColorType::Gray(8) => (Format::R8Unorm, format::Swizzle(format::Component::R, format::Component::R, format::Component::R, format::Component::A)),
         _ => (Format::Rgb8Unorm, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A))
@@ -86,8 +90,9 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
     let dimensions = img.dimensions();
     let (color_type, swizzle) = get_color_type(&img.color());
-    let pixels = match color_type {
-        Format::Rgba8Srgb => premultiply_by_alpha(&img.raw_pixels()),
+    let pixels = match &img.color() {
+        ColorType::RGBA(8) => premultiply_by_alpha(&img.raw_pixels()),
+        ColorType::RGB(8) => add_alpha_channel(&img.raw_pixels()),
         _ => img.raw_pixels()};
     let texture_builder = TextureBuilder::new()
         .with_data_width(dimensions.0)
@@ -144,11 +149,13 @@ pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet:
         sprite_sheet: sprite_sheet.clone(),
         sprite_number: 0,
     };
+    let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
     world.create_entity()
         .with(transform)
         .with(sprite_render)
         .with(tw_image)
         .with(Transparent)
+        .with(tint)
         .build();
 }
 

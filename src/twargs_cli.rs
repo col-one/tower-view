@@ -12,3 +12,5 @@ pub struct Opt {
     #[structopt(required=true, multiple=true, number_of_values=1)]
     pub inputs: Vec<String>,
 }
+
+
