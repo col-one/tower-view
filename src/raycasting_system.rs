@@ -12,7 +12,7 @@ use amethyst::{
         window::ScreenDimensions,
 };
 
-use crate::twinputshandler::TwInputHandler;
+use crate::inputshandler::TwInputHandler;
 
 #[derive(SystemDesc)]
 pub struct TwMouseRaycastSystem;

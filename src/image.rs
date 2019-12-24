@@ -8,7 +8,7 @@ use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteS
     palette::Srgba,
     };
 use amethyst::core::transform::Transform;
-use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage};
+use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage, };
 use amethyst::prelude::*;
 use amethyst::assets::{AssetStorage, Loader, Handle};
 use image;
@@ -19,10 +19,11 @@ use std::path::PathBuf;
 
 
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
-use crate::twutils::{premultiply_by_alpha, add_alpha_channel};
-use crate::twargs_cli::Opt;
+use crate::utils::{premultiply_by_alpha, add_alpha_channel};
+use crate::args_cli::Opt;
 
 
+// input path
 pub struct InputComponent {
     pub path: String,
 }
@@ -37,6 +38,15 @@ impl  InputComponent {
     }
 }
 
+
+// active component
+pub struct TwActiveComponent;
+
+impl Component for TwActiveComponent {
+    type Storage = VecStorage<Self>;
+}
+
+
 // Component Image
 #[derive(PartialEq, Debug)]
 pub struct TwImage {
@@ -47,6 +57,9 @@ pub struct TwImage {
     pub ratio: f32,
     pub z_order: f32,
     pub alpha: f32,
+    pub red: f32,
+    pub green: f32,
+    pub blue: f32,
 }
 
 impl  TwImage {
@@ -61,6 +74,9 @@ impl  TwImage {
             z_order: 0.0,
             id,
             alpha: 1.0,
+            red: 1.0,
+            green: 1.0,
+            blue: 1.0,
         }
     }
 }

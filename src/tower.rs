@@ -6,12 +6,12 @@ use amethyst::{
     renderer::rendy::hal::pso::Rect,
 };
 
-use crate::twimage;
-use crate::twcamera;
-use crate::twinputshandler;
-use crate::twimage::TwImage;
-use crate::twargs_cli::Opt;
-use crate::twinputshandler::get_drop_file;
+use crate::image;
+use crate::camera;
+use crate::inputshandler;
+use crate::image::TwImage;
+use crate::args_cli::Opt;
+use crate::inputshandler::get_drop_file;
 
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
@@ -46,8 +46,8 @@ impl<'a> SimpleState for Tower {
         let mut tower_data = TowerData{twimage_count: 0.0, scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16}};
         world.insert(tower_data);
         // load image from inputs arg
-        twimage::load_image_from_inputs_arg(world);
-        twcamera::initialise_camera(world);
+        image::load_image_from_inputs_arg(world);
+        camera::initialise_camera(world);
     }
 
     fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent,
@@ -55,7 +55,7 @@ impl<'a> SimpleState for Tower {
         if let StateEvent::Window(event) = event {
             if let Some(drop_file) = get_drop_file(&event) {
                 let mut world = data.world;
-                twimage::load_image_from_path(world, &drop_file);
+                image::load_image_from_path(world, &drop_file);
             }
         }
         Trans::None

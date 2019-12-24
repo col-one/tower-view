@@ -19,26 +19,29 @@ use amethyst::{
     utils::application_root_dir,
     input::{InputBundle, StringBindings},
 };
+use amethyst_imgui::RenderImgui;
 
-mod twargs_cli;
-mod twimage;
-mod twimage_system;
-mod twcamera;
-mod twcamera_system;
-mod twinputshandler;
+mod args_cli;
+mod image;
+mod image_system;
+mod camera;
+mod camera_system;
+mod inputshandler;
 mod tower;
-mod twutils;
-mod twscene_system;
-mod twraycasting_system;
+mod utils;
+mod scene_system;
+mod raycasting_system;
+mod ui_system;
 
-use crate::twargs_cli::Opt;
+use crate::args_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
-use crate::twcamera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
-                             CameraZoomNavigationSystem, CameraFitNavigationSystem};
-use crate::twimage_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem,
-                            TwImageToFrontSystem, TwImageChangeAlphaSystem, TwImageApplyBlendingSystem};
-use crate::twraycasting_system::TwMouseRaycastSystem;
-use crate::twscene_system::{SceneBoundingBox};
+use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
+                           CameraZoomNavigationSystem, CameraFitNavigationSystem};
+use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem,
+                          TwImageToFrontSystem, TwImageApplyBlendingSystem};
+use crate::raycasting_system::TwMouseRaycastSystem;
+use crate::scene_system::{SceneBoundingBox};
+use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
 
 
 
@@ -69,6 +72,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(RenderingBundle::<DefaultBackend>::new()
             .with_plugin(RenderToWindow::from_config_path(display_config_path)
                              .with_clear(BACKGROUNDCOLOR),)
+            .with_plugin(RenderImgui::<StringBindings>::default())
             .with_plugin(RenderFlat2D::default()))?
         .with(CameraTranslateNavigationSystem, "camera_translate_system", &["input_system"])
         .with(TwImageActiveSystem, "image_active_system", &["input_system"])
@@ -80,9 +84,10 @@ fn main() -> amethyst::Result<()> {
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
         .with(SceneBoundingBox, "scene_bounding_system", &["input_system", "image_active_system"])
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
-        .with(TwImageChangeAlphaSystem, "image_change_alpha_system", &["input_system", "image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["input_system", "image_active_system"])
-        .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"]);
+        .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"])
+        .with(SliderRedSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
+        .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"]);
 
     let assets_dir = app_root.join("assets");
     let mut game = Application::new(assets_dir, Tower::default(), game_data)?;

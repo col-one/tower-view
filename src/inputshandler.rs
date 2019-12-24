@@ -7,7 +7,16 @@ use amethyst::{
 };
 
 use uuid::Uuid;
-use crate::twimage::TwImage;
+use crate::image::TwImage;
+
+
+#[derive(PartialEq)]
+pub enum MouseState {
+    Free,
+    Down,
+    Up
+}
+
 
 pub struct TwInputHandler {
     pub middlepoint: Point2<f32>,
@@ -19,8 +28,8 @@ pub struct TwInputHandler {
     pub twimages_under_mouse: Vec<(Uuid, f32)>,
     pub twimage_active: Option<Uuid>,
     pub z: f32,
+    pub mouse_state: MouseState,
 }
-
 
 impl Default for TwInputHandler {
     fn default() -> Self {
@@ -36,6 +45,7 @@ impl Default for TwInputHandler {
             twimages_under_mouse: Vec::new(),
             twimage_active: None,
             z: 0.0,
+            mouse_state: MouseState::Free,
         }
     }
 }

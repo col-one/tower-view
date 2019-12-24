@@ -12,8 +12,8 @@ use amethyst::{
 };
 use std::time::Duration;
 
-use crate::twcamera::TwCamera;
-use crate::twinputshandler::TwInputHandler;
+use crate::camera::TwCamera;
+use crate::inputshandler::TwInputHandler;
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 
 

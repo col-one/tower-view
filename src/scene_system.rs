@@ -10,11 +10,13 @@ use amethyst::{
     assets::{AssetStorage},
     renderer::rendy::hal::pso::Rect,
 };
+
+
 use std::time::Duration;
 
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
-use crate::twinputshandler::TwInputHandler;
-use crate::twimage::TwImage;
+use crate::inputshandler::TwInputHandler;
+use crate::image::TwImage;
 
 
 #[derive(SystemDesc)]
