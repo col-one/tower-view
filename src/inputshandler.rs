@@ -3,7 +3,7 @@ use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
 use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}};
 use amethyst::{
-        winit::{VirtualKeyCode, Event, WindowEvent},
+        winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition},
 };
 
 use uuid::Uuid;
@@ -73,6 +73,16 @@ pub fn get_drop_file(event: &Event) -> Option<String> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
             WindowEvent::DroppedFile(path) => Some(path.to_str().unwrap().to_owned()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::CursorMoved { position: logical, .. } => Some(logical),
             _ => None,
         },
         _ => None,
