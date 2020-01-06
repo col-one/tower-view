@@ -29,6 +29,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 fn caching_image(mut cache: MutexGuard<'_, Vec<(TwImage, TextureData)>>, path: String) {
     info!("TwImage is loading in cache.");
     cache.push(load_texture_from_file(&path));
+    thread::sleep(Duration::from_secs(5));
     info!("TwImage loaded in cache.");
 }
 
