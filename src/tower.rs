@@ -21,7 +21,9 @@ use std::sync::mpsc::{Sender, Receiver};
 use std::future::Future;
 use std::sync::{Arc, Mutex};
 use crate::placeholder::TwPlaceHolder;
+use std::ffi::{OsStr, OsString};
 
+use crate::utils::list_valid_files;
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
@@ -31,7 +33,8 @@ pub const WINDOWHEIGHT: f32 = 720.0;
 pub struct TowerData {
     pub twimage_count: f32,
     pub scene_rect: Rect,
-    pub cache: Arc<Mutex<Vec<(TwImage, TextureData)>>>
+    pub cache: Arc<Mutex<Vec<(TwImage, TextureData)>>>,
+    pub working_dir: OsString
 }
 
 impl Default for TowerData {
@@ -40,6 +43,7 @@ impl Default for TowerData {
             twimage_count: 0.0,
             scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16},
             cache: Arc::new(Mutex::new(Vec::new())),
+            working_dir: OsStr::new(".").to_owned(),
         }
     }
 }
@@ -60,6 +64,7 @@ impl<'a> SimpleState for Tower {
         world.insert(tower_data);
         // load image from inputs arg
         image::load_image_from_inputs_arg(world);
+        info!("Valide files are {:?}", list_valid_files(&world.fetch::<TowerData>().working_dir));
         camera::initialise_camera(world);
         world.register::<TwPlaceHolder>();
     }

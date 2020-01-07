@@ -1,3 +1,26 @@
+use std::path::Path;
+use std::ffi::{OsStr, OsString};
+use std::fs;
+
+static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr", "ico", "imageops",
+                                             "io", "jpeg", "jpg", "math", "png", "pnm", "tga",
+                                             "tiff"];
+
+
+pub fn list_valid_files(dir: &OsStr) -> Vec<OsString> {
+    let mut valid_paths = Vec::new();
+    let paths = fs::read_dir(dir).unwrap();
+    for path in paths {
+        let p = path.unwrap();
+        if p.path().as_path().extension().map_or(false, |ext| {
+            IMAGE_FORMATS.iter().any(|f| OsStr::new(f) == ext)
+        }) && p.path().as_path().is_file() {
+            valid_paths.push(p.path().as_os_str().to_owned())
+        }
+    }
+    valid_paths
+}
+
 
 pub fn premultiply_by_alpha(pixels: &Vec<u8>) -> Vec<u8> {
     let mut pixels_mult = Vec::new();

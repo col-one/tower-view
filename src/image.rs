@@ -16,7 +16,7 @@ use image;
 use image::{GenericImageView, ImageDecoder, ImageDecoderExt, ColorType};
 use std::borrow::Cow;
 use uuid::Uuid;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
@@ -186,7 +186,7 @@ pub fn load_image_from_inputs_arg(world: &mut World) {
         opt.inputs.iter().map(|input| InputComponent::new(input.to_owned()))
             .collect::<Vec<_>>()
     };
-    for path in inputs {
+    for path in &inputs {
         let (mut tw_image, texture_data) = load_texture_from_file(&path.path);
         let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
         tw_image.z_order = z_count;
@@ -195,6 +195,7 @@ pub fn load_image_from_inputs_arg(world: &mut World) {
     }
         let mut td = world.fetch_mut::<TowerData>();
         td.twimage_count = z_count;
+        td.working_dir = Path::new(&inputs.last().unwrap().path).parent().unwrap().as_os_str().to_owned();
 }
 
 pub fn load_image_from_path(world: &mut World, path: &str) {

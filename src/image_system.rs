@@ -4,12 +4,13 @@ use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBind
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
 use amethyst::ecs::prelude::*;
 use amethyst::window::ScreenDimensions;
-use amethyst::renderer::rendy::wsi::winit::MouseButton;
+use amethyst::renderer::rendy::{wsi::winit::MouseButton, texture::TextureBuilder};
 use amethyst::renderer::{camera::{ActiveCamera, Camera, Projection},
                         sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat, Sprite},
                         resources::Tint,
                         palette::Srgba,
-                        Texture, Transparent
+                        Texture, Transparent,
+
 };
 use amethyst::assets::{AssetStorage, Loader};
 use amethyst::input::is_mouse_button_down;
@@ -18,12 +19,14 @@ use uuid::Uuid;
 use std::{thread, time};
 
 use crate::image::{TwImage, TwActiveComponent};
-
 use crate::inputshandler::{MouseState, TwInputHandler};
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
+use crate::placeholder::TwPlaceHolder;
+
 use log;
 use std::cmp::Ordering::Equal;
 use std::sync::Arc;
+use std::path::Path;
 
 
 #[derive(SystemDesc)]
@@ -306,6 +309,8 @@ pub struct TwImageLoadFromCacheSystem;
 
 impl<'s> System<'s> for TwImageLoadFromCacheSystem {
     type SystemData = (WriteStorage<'s, TwImage>,
+                       WriteStorage<'s, TwPlaceHolder>,
+                       WriteStorage<'s, Transform>,
                        Write<'s, TowerData>,
                        Entities<'s>,
                        Write<'s, AssetStorage<Texture>>,
@@ -314,6 +319,8 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
         mut tw_images,
+        mut tw_places,
+        mut transforms,
         mut td,
         entities,
         mut asset_texture,
@@ -321,52 +328,57 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
         mut loader,
         mut world
     ): Self::SystemData) {
-        let arc_cache = Arc::clone(&td.cache);
-        let cache_res = match arc_cache.try_lock() {
-            Ok(cache) => Some(cache),
-            Err(e) => None
-        };
-        if !cache_res.is_none() {
-            let mut cache = cache_res.unwrap();
-            if !cache.is_empty() {
-                let (tw_image, texture_data) = cache.pop().unwrap();
-                // create entity
-                let texture_storage = &mut asset_texture;
-                let mut sprites = Vec::with_capacity(1);
-                let loader = &mut loader;
-                let texture = loader.load_from_data(texture_data, (), &texture_storage);
-                let sprite = Sprite::from_pixel_values(
-                    tw_image.width, tw_image.height, tw_image.width,
-                    tw_image.height, 0, 0, [0.0, 0.0],
-                    false, false,
-                );
-                sprites.push(sprite);
-                let sprite_sheet = SpriteSheet {
-                    texture,
-                    sprites,
-                };
-                let sprite_handle = loader.load_from_data(
-                    sprite_sheet,
-                    (),
-                    &asset_sprite,
-                );
-                let mut transform = Transform::default();
-                transform.set_translation_x(0.0);
-                transform.set_translation_y(0.0);
-                transform.set_translation_z(td.twimage_count);
-                let sprite_render = SpriteRender {
-                    sprite_sheet: sprite_handle.clone(),
-                    sprite_number: 0,
-                };
-                let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
-                world.create_entity(&*entities)
-                    .with(transform)
-                    .with(sprite_render)
-                    .with(tw_image)
-                    .with(Transparent)
-                    .with(tint)
-                    .build();
-                td.twimage_count = td.twimage_count + 1.0;
+        for (tw_place, transform, entity) in (&mut tw_places, &mut transforms, &*entities).join() {
+            let arc_cache = Arc::clone(&td.cache);
+            let cache_res = match arc_cache.try_lock() {
+                Ok(cache) => Some(cache),
+                Err(e) => None
+            };
+            if !cache_res.is_none() {
+                let mut cache = cache_res.unwrap();
+                if !cache.is_empty() {
+                    let (tw_image, texture_data) = cache.pop().unwrap();
+                    // create entity
+                    let texture_storage = &mut asset_texture;
+                    let mut sprites = Vec::with_capacity(1);
+                    let loader = &mut loader;
+                    let texture = loader.load_from_data(texture_data, (), &texture_storage);
+                    let sprite = Sprite::from_pixel_values(
+                        tw_image.width, tw_image.height, tw_image.width,
+                        tw_image.height, 0, 0, [0.0, 0.0],
+                        false, false,
+                    );
+                    sprites.push(sprite);
+                    let sprite_sheet = SpriteSheet {
+                        texture,
+                        sprites,
+                    };
+                    let sprite_handle = loader.load_from_data(
+                        sprite_sheet,
+                        (),
+                        &asset_sprite,
+                    );
+                    let mut transform = transform.clone();
+                    transform.set_translation_z(td.twimage_count);
+                    let sprite_render = SpriteRender {
+                        sprite_sheet: sprite_handle.clone(),
+                        sprite_number: 0,
+                    };
+                    let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
+                    let tw_image_path = tw_image.file_name.clone();
+                    world.create_entity(&*entities)
+                        .with(transform)
+                        .with(sprite_render)
+                        .with(tw_image)
+                        .with(Transparent)
+                        .with(tint)
+                        .build();
+                    td.twimage_count = td.twimage_count + 1.0;
+                    // delete placeholder
+                    entities.delete(entity);
+                    // set working dir
+                    td.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
+                }
             }
         }
     }

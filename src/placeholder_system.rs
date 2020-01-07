@@ -18,7 +18,6 @@ use amethyst::input::is_mouse_button_down;
 
 use std::thread;
 use std::time::Duration;
-use threadpool::ThreadPool;
 use std::sync::mpsc::channel;
 
 use crate::placeholder::TwPlaceHolder;

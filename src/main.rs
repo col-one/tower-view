@@ -47,9 +47,7 @@ use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem};
 
 
-
 fn main() -> amethyst::Result<()> {
-
     Builder::new()
     .format(|buf, record| {
         writeln!(buf,
