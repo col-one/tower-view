@@ -24,12 +24,14 @@ use crate::placeholder::TwPlaceHolder;
 use crate::image::*;
 use crate::tower::TowerData;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::collections::HashMap;
 
-fn caching_image(mut cache: MutexGuard<'_, Vec<(TwImage, TextureData)>>, path: String) {
-    info!("TwImage is loading in cache.");
-    cache.push(load_texture_from_file(&path));
+
+fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
+    info!("TwImage is loading in cache. {:?}", &path);
+    cache.insert(path.clone(), load_texture_from_file(&path));
     thread::sleep(Duration::from_secs(5));
-    info!("TwImage loaded in cache.");
+    info!("TwImage loaded in cache. {:?}", &path);
 }
 
 
@@ -46,15 +48,37 @@ impl<'s> System<'s> for TwPlaceHolderLoadTwImageSystem {
         entities,
         mut td,
     ): Self::SystemData) {
-        let mut holder_to_del = Vec::new();
         for (tw_holder, entity) in (&mut tw_holders, &*entities).join() {
             if tw_holder.to_cache {
                 let cache = Arc::clone(&td.cache);
                 let path = tw_holder.twimage_path.clone();
-                thread::spawn(move || {caching_image(cache.lock().unwrap(), path);});
-                holder_to_del.push(entity);
+                if !cache.lock().unwrap().contains_key(&path) {
+                    thread::spawn(move || {caching_image(cache.lock().unwrap(), path);});
+                } else {
+                    info!("Image already in cache {:?}", path);
+                }
                 tw_holder.to_cache = false;
             }
         }
     }
 }
+
+
+#[derive(SystemDesc)]
+pub struct TwPlaceHolderCacheSystem;
+
+impl<'s> System<'s> for TwPlaceHolderCacheSystem {
+    type SystemData = (Write<'s, TowerData>,
+                       );
+    fn run(&mut self, (
+        mut td,
+    ): Self::SystemData) {
+        if !td.file_to_cache.is_empty() {
+            let path = td.file_to_cache.pop().unwrap();
+            let cache = Arc::clone(&td.cache);
+            thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
+        }
+    }
+}
+
+

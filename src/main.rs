@@ -44,7 +44,7 @@ use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveS
 use crate::raycasting_system::TwMouseRaycastSystem;
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
-use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem};
+use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem};
 
 
 fn main() -> amethyst::Result<()> {
@@ -90,6 +90,7 @@ fn main() -> amethyst::Result<()> {
         .with(SliderRedSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
         .with(TwPlaceHolderLoadTwImageSystem, "place_holder_system", &["input_system"])
         .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["input_system", "place_holder_system"])
+        .with(TwPlaceHolderCacheSystem, "images_to_cache", &["input_system"])
         .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"]);
 
     let assets_dir = app_root.join("assets");

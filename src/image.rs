@@ -49,7 +49,7 @@ impl Component for TwActiveComponent {
 
 
 // Component Image
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct TwImage {
     pub id: Uuid,
     pub width: u32,

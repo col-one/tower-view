@@ -2,6 +2,7 @@ use std::path::Path;
 use std::ffi::{OsStr, OsString};
 use std::fs;
 
+
 static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr", "ico", "imageops",
                                              "io", "jpeg", "jpg", "math", "png", "pnm", "tga",
                                              "tiff"];
@@ -54,3 +55,4 @@ pub fn add_alpha_channel(pixels: &Vec<u8>) -> Vec<u8> {
     pixels_alpha.push(255);
     pixels_alpha
 }
+

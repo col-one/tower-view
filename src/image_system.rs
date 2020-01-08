@@ -337,12 +337,12 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
             if !cache_res.is_none() {
                 let mut cache = cache_res.unwrap();
                 if !cache.is_empty() {
-                    let (tw_image, texture_data) = cache.pop().unwrap();
+                    let (tw_image, texture_data) = cache.get(&tw_place.twimage_path).unwrap();
                     // create entity
                     let texture_storage = &mut asset_texture;
                     let mut sprites = Vec::with_capacity(1);
                     let loader = &mut loader;
-                    let texture = loader.load_from_data(texture_data, (), &texture_storage);
+                    let texture = loader.load_from_data(texture_data.clone(), (), &texture_storage);
                     let sprite = Sprite::from_pixel_values(
                         tw_image.width, tw_image.height, tw_image.width,
                         tw_image.height, 0, 0, [0.0, 0.0],
@@ -366,6 +366,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                     };
                     let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
                     let tw_image_path = tw_image.file_name.clone();
+                    let tw_image = tw_image.clone();
                     world.create_entity(&*entities)
                         .with(transform)
                         .with(sprite_render)

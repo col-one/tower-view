@@ -22,6 +22,7 @@ use std::future::Future;
 use std::sync::{Arc, Mutex};
 use crate::placeholder::TwPlaceHolder;
 use std::ffi::{OsStr, OsString};
+use std::collections::HashMap;
 
 use crate::utils::list_valid_files;
 
@@ -33,8 +34,9 @@ pub const WINDOWHEIGHT: f32 = 720.0;
 pub struct TowerData {
     pub twimage_count: f32,
     pub scene_rect: Rect,
-    pub cache: Arc<Mutex<Vec<(TwImage, TextureData)>>>,
-    pub working_dir: OsString
+    pub cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
+    pub working_dir: OsString,
+    pub file_to_cache: Vec<OsString>,
 }
 
 impl Default for TowerData {
@@ -42,8 +44,9 @@ impl Default for TowerData {
         Self {
             twimage_count: 0.0,
             scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16},
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(Mutex::new(HashMap::new())),
             working_dir: OsStr::new(".").to_owned(),
+            file_to_cache: Vec::new(),
         }
     }
 }
@@ -59,12 +62,14 @@ impl<'a> SimpleState for Tower {
         // command line arguments
         let opt = Opt::from_args();
         world.insert(opt);
-        // init tower data
-        let mut tower_data = TowerData::default();
-        world.insert(tower_data);
         // load image from inputs arg
         image::load_image_from_inputs_arg(world);
-        info!("Valide files are {:?}", list_valid_files(&world.fetch::<TowerData>().working_dir));
+        // init tower data
+        let mut tower_data = TowerData::default();
+        // get file to cache
+        tower_data.file_to_cache = list_valid_files(&world.fetch::<TowerData>().working_dir);
+        info!("{:?}", tower_data.file_to_cache);
+        world.insert(tower_data);
         camera::initialise_camera(world);
         world.register::<TwPlaceHolder>();
     }
