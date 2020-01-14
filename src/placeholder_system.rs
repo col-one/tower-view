@@ -30,7 +30,7 @@ use std::collections::HashMap;
 fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
     info!("TwImage is loading in cache. {:?}", &path);
     cache.insert(path.clone(), load_texture_from_file(&path));
-    thread::sleep(Duration::from_secs(5));
+//    thread::sleep(Duration::from_secs(5));
     info!("TwImage loaded in cache. {:?}", &path);
 }
 

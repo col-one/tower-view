@@ -37,6 +37,7 @@ pub struct TowerData {
     pub cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
     pub working_dir: OsString,
     pub file_to_cache: Vec<OsString>,
+    pub files_order: Vec<OsString>,
 }
 
 impl Default for TowerData {
@@ -47,6 +48,7 @@ impl Default for TowerData {
             cache: Arc::new(Mutex::new(HashMap::new())),
             working_dir: OsStr::new(".").to_owned(),
             file_to_cache: Vec::new(),
+            files_order: Vec::new(),
         }
     }
 }
@@ -68,6 +70,7 @@ impl<'a> SimpleState for Tower {
         let mut tower_data = TowerData::default();
         // get file to cache
         tower_data.file_to_cache = list_valid_files(&world.fetch::<TowerData>().working_dir);
+        tower_data.files_order = tower_data.file_to_cache.clone();
         info!("{:?}", tower_data.file_to_cache);
         world.insert(tower_data);
         camera::initialise_camera(world);

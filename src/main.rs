@@ -40,7 +40,8 @@ use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                            CameraZoomNavigationSystem, CameraFitNavigationSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem,
-                          TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem};
+                          TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
+                          TwImageNextSystem};
 use crate::raycasting_system::TwMouseRaycastSystem;
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
@@ -90,6 +91,7 @@ fn main() -> amethyst::Result<()> {
         .with(SliderRedSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
         .with(TwPlaceHolderLoadTwImageSystem, "place_holder_system", &["input_system"])
         .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["input_system", "place_holder_system"])
+        .with(TwImageNextSystem, "image_next_cache", &["input_system"])
         .with(TwPlaceHolderCacheSystem, "images_to_cache", &["input_system"])
         .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"]);
 

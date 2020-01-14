@@ -9,3 +9,5 @@ thumbs.db
 *.swp
 
 .idea/
+
+imgui.ini
