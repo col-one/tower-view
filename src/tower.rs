@@ -24,7 +24,8 @@ use crate::placeholder::TwPlaceHolder;
 use std::ffi::{OsStr, OsString};
 use std::collections::HashMap;
 
-use crate::utils::list_valid_files;
+use crate::utils::{list_valid_files, is_valid_file};
+use std::path::Path;
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
@@ -81,13 +82,17 @@ impl<'a> SimpleState for Tower {
     ) -> SimpleTrans {
         if let StateEvent::Window(event) = event {
             if let Some(drop_file) = get_drop_file(&event) {
-                let mut position = Transform::default();
-                position.set_translation_x(self.mouse_position.0 as f32 - WINDOWWIDTH * 0.5);
-                position.set_translation_y(-(self.mouse_position.1 as f32 - WINDOWHEIGHT * 0.5));
-                // todo: use screen to world position.
-                let mut world = data.world;
-                let sprite = placeholder::sprite_twplaceholder(world);
-                placeholder::create_entity_twplaceholder(world, drop_file, position, sprite);
+                if is_valid_file(Path::new(&drop_file)) {
+                    let mut position = Transform::default();
+                    position.set_translation_x(self.mouse_position.0 as f32 - WINDOWWIDTH * 0.5);
+                    position.set_translation_y(-(self.mouse_position.1 as f32 - WINDOWHEIGHT * 0.5));
+                    // todo: use screen to world position.
+                    let mut world = data.world;
+                    let sprite = placeholder::sprite_twplaceholder(world);
+                    placeholder::create_entity_twplaceholder(world, drop_file, position, sprite);
+                } else {
+                    warn!("Invalid format for {:?}", &drop_file);
+                }
             }
             if let Some(mouse_pos) = get_moved_mouse(&event) {
                 self.mouse_position = (mouse_pos.x, mouse_pos.y);

@@ -8,14 +8,19 @@ static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr"
                                              "tiff"];
 
 
+pub fn is_valid_file(file: &Path) -> bool {
+   file.extension().map_or(false, |ext| {
+        IMAGE_FORMATS.iter().any(|f| OsStr::new(f) == ext)
+    })
+}
+
+
 pub fn list_valid_files(dir: &OsStr) -> Vec<OsString> {
     let mut valid_paths = Vec::new();
     let paths = fs::read_dir(dir).unwrap();
     for path in paths {
         let p = path.unwrap();
-        if p.path().as_path().extension().map_or(false, |ext| {
-            IMAGE_FORMATS.iter().any(|f| OsStr::new(f) == ext)
-        }) && p.path().as_path().is_file() {
+        if is_valid_file(p.path().as_path()) && p.path().as_path().is_file() {
             valid_paths.push(p.path().as_os_str().to_owned())
         }
     }
