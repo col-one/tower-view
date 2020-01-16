@@ -1,26 +1,11 @@
 # tower
 
-## How to run
+Tower is an image viewer made with rust.
+The purpose of Tower is to offert a simple, light and perfomant image viewer with
+a bunch of features adapted to the CG world and digital creation.
 
-To run the game, use
+Take a look to the milestones:
 
-```
-cargo run --features "vulkan"
-```
 
-on Windows and Linux, and
+Tower is using the awesome ECS engine Amethyst.
 
-```
-cargo run --features "metal"
-```
-
-on macOS.
-
-For building without any graphics backend, you can use
-
-```
-cargo run --features "empty"
-```
-
-but be aware that as soon as you need any rendering you won't be able to run your game when using
-the `empty` feature.
