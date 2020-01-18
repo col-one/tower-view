@@ -3,7 +3,7 @@ use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
 use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}};
 use amethyst::{
-        winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition},
+        winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition, ElementState, MouseButton, WindowId, DeviceId, ModifiersState},
 };
 
 use uuid::Uuid;
@@ -89,9 +89,48 @@ pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
     }
 }
 
+pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Pressed, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: false,
+                alt: true,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+pub fn mouse_released(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Released, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: false,
+                alt: true,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+
+//
+//pub fn mouse_press(button: MouseButton) -> Event {
+//    match *event {
+//        mouse_event(button, ElementState::Pressed)
+//    }
+//}
+
+
 #[derive(Default)]
 pub struct TwInputsHandler {
     pub last_dropped_file_path: Option<String>,
     pub mouse_position: Option<(f32, f32)>,
-    pub world_mouse_position: Option<(f32, f32)>,
+    pub mouse_button_pressed: Option<MouseButton>,
 }

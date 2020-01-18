@@ -5,7 +5,7 @@ use amethyst::{
     input,
     renderer::rendy::hal::pso::Rect,
     core::transform::Transform,
-    winit::dpi::{LogicalPosition},
+    winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
     renderer::types::TextureData,
     renderer::{ActiveCamera},
     window::ScreenDimensions,
@@ -16,7 +16,7 @@ use crate::camera;
 use crate::inputshandler;
 use crate::image::TwImage;
 use crate::args_cli::Opt;
-use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler};
+use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed, mouse_released};
 use crate::placeholder;
 use crate::inputshandler::TwInputHandler;
 use std::sync::mpsc::{Sender, Receiver};
@@ -96,6 +96,20 @@ impl<'a> SimpleState for Tower {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     let screen = data.world.fetch::<ScreenDimensions>();
                     tw_in.mouse_position = Some(((mouse_pos.x as f32) * screen.hidpi_factor() as f32, (mouse_pos.y as f32) * screen.hidpi_factor() as f32));
+                }
+            }
+            // alt mouse pressed event
+            if let Some(button) = alt_mouse_pressed(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.mouse_button_pressed = Some(button);
+                }
+            }
+            // mouse released event
+            if let Some(button) = mouse_released(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.mouse_button_pressed = None;
                 }
             }
         }
