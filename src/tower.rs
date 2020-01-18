@@ -5,8 +5,10 @@ use amethyst::{
     input,
     renderer::rendy::hal::pso::Rect,
     core::transform::Transform,
-    winit::dpi::LogicalPosition,
-    renderer::types::TextureData
+    winit::dpi::{LogicalPosition},
+    renderer::types::TextureData,
+    renderer::{ActiveCamera},
+    window::ScreenDimensions,
 };
 
 use crate::image;
@@ -14,7 +16,7 @@ use crate::camera;
 use crate::inputshandler;
 use crate::image::TwImage;
 use crate::args_cli::Opt;
-use crate::inputshandler::{get_drop_file, get_moved_mouse};
+use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler};
 use crate::placeholder;
 use crate::inputshandler::TwInputHandler;
 use std::sync::mpsc::{Sender, Receiver};
@@ -55,9 +57,7 @@ impl Default for TowerData {
 }
 
 #[derive(Default)]
-pub struct Tower {
-    pub mouse_position: (f64, f64)
-}
+pub struct Tower;
 
 impl<'a> SimpleState for Tower {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -74,28 +74,29 @@ impl<'a> SimpleState for Tower {
         tower_data.files_order = tower_data.file_to_cache.clone();
         info!("{:?}", tower_data.file_to_cache);
         world.insert(tower_data);
+        // init twinputshandler
+        let mut tw_inputs_handler = TwInputsHandler::default();
+        world.insert(tw_inputs_handler);
         camera::initialise_camera(world);
-        world.register::<TwPlaceHolder>();
     }
 
     fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent,
     ) -> SimpleTrans {
         if let StateEvent::Window(event) = event {
+            // drop file event
             if let Some(drop_file) = get_drop_file(&event) {
-                if is_valid_file(Path::new(&drop_file)) {
-                    let mut position = Transform::default();
-                    position.set_translation_x(self.mouse_position.0 as f32 - WINDOWWIDTH * 0.5);
-                    position.set_translation_y(-(self.mouse_position.1 as f32 - WINDOWHEIGHT * 0.5));
-                    // todo: use screen to world position.
-                    let mut world = data.world;
-                    let sprite = placeholder::sprite_twplaceholder(world);
-                    placeholder::create_entity_twplaceholder(world, drop_file, position, sprite);
-                } else {
-                    warn!("Invalid format for {:?}", &drop_file);
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.last_dropped_file_path = Some(drop_file);
                 }
             }
+            // mouse move event
             if let Some(mouse_pos) = get_moved_mouse(&event) {
-                self.mouse_position = (mouse_pos.x, mouse_pos.y);
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    let screen = data.world.fetch::<ScreenDimensions>();
+                    tw_in.mouse_position = Some(((mouse_pos.x as f32) * screen.hidpi_factor() as f32, (mouse_pos.y as f32) * screen.hidpi_factor() as f32));
+                }
             }
         }
         Trans::None

@@ -10,6 +10,7 @@ use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteS
 use amethyst::core::transform::Transform;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage, };
 use amethyst::prelude::*;
+use amethyst::ecs::prelude::LazyUpdate;
 use amethyst::assets::{AssetStorage, Loader, Handle};
 use image;
 use image::{GenericImageView, ImageDecoder, ImageDecoderExt, ColorType};
@@ -50,16 +51,13 @@ pub fn init_sprite(world: &World) -> Handle<SpriteSheet> {
     )
 }
 
-pub fn sprite_twplaceholder(world: &mut World) -> SpriteRender {
-    let loader = world.read_resource::<Loader>();
-    let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+pub fn sprite_twplaceholder(loader: &Loader, texture_storage: &AssetStorage<Texture>,
+                            sprite_sheet_store: &AssetStorage<SpriteSheet>) -> SpriteRender {
     let texture_handle = loader.load(
         "texture/tower-64x64.png",
         ImageFormat::default(),
         (),
         &texture_storage);
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
     let sprite_handle = loader.load(
         "texture/tower-64x64.ron",
         SpriteSheetFormat(texture_handle),

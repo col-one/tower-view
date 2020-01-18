@@ -88,3 +88,10 @@ pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
         _ => None,
     }
 }
+
+#[derive(Default)]
+pub struct TwInputsHandler {
+    pub last_dropped_file_path: Option<String>,
+    pub mouse_position: Option<(f32, f32)>,
+    pub world_mouse_position: Option<(f32, f32)>,
+}
