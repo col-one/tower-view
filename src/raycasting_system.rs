@@ -63,3 +63,30 @@ impl<'s> System<'s> for TwMouseRaycastSystem {
         }
     }
 }
+
+
+#[derive(SystemDesc)]
+pub struct TwInputsHandlerScreenToWorldSystem;
+
+impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
+    type SystemData = (
+        ReadStorage<'s, Transform>,
+        ReadStorage<'s, Camera>,
+        ReadExpect<'s, ScreenDimensions>,
+        Write<'s, TwInputsHandler>
+    );
+
+    fn run(&mut self, (
+            transforms,
+            cameras,
+            screen_dimensions,
+            mut tw_in
+        ): Self::SystemData,) {
+        if let Some(mouse_position) = tw_in.mouse_position {
+            let (camera, transform) = (&cameras, &transforms).join().next().unwrap();
+            let world_position = screen_to_world(mouse_position, camera, transform, &screen_dimensions);
+            tw_in.mouse_world_position = Some((world_position.x as f32, world_position.y as f32));
+        }
+    }
+}
+

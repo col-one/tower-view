@@ -19,7 +19,7 @@ use uuid::Uuid;
 use std::{thread, time};
 
 use crate::image::{TwImage, TwActiveComponent};
-use crate::inputshandler::{MouseState, TwInputHandler};
+use crate::inputshandler::{MouseState, TwInputHandler, TwInputsHandler};
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::placeholder::TwPlaceHolder;
 
@@ -28,6 +28,7 @@ use std::cmp::Ordering::Equal;
 use std::sync::Arc;
 use std::path::Path;
 use std::ffi::OsString;
+use crate::raycasting_system::screen_to_world;
 
 
 #[derive(SystemDesc)]
@@ -123,47 +124,35 @@ pub struct TwImageMoveSystem;
 impl<'s> System<'s> for TwImageMoveSystem {
     type SystemData = (Read<'s, InputHandler<StringBindings>>,
                        Write<'s, World>,
-                       ReadStorage<'s, TwImage>,
+                       WriteStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
-                       ReadStorage<'s, SpriteRender>,
-                       Read<'s, AssetStorage<SpriteSheet>>,
-                       Entities<'s>);
+                       Read<'s, TwInputsHandler>);
     fn run(&mut self, (
             input,
             mut world,
-            tw_images,
+            mut tw_images,
             mut transforms,
-            sprites,
-            sprite_sheets,
-            entities
+            tw_in,
         ): Self::SystemData) {
         let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
-        for (sprite, transform, tw_image, entity) in (&sprites, &mut transforms, &tw_images, &*entities).join() {
-            if input.key_is_down(VirtualKeyCode::LAlt) && input.mouse_button_is_down(MouseButton::Left) {
-                // trace vector to move image
-                if tw_input_handler.last_mouse_pos.is_none() {
-                    let world_pos = {
-                        Some((tw_input_handler.mouse_world_pos.x, tw_input_handler.mouse_world_pos.y))
-                    };
-                    tw_input_handler.set_last_mouse_pos(world_pos);
+        for (transform, tw_image) in (&mut transforms, &mut tw_images).join() {
+            if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+                if let Some(button) = &tw_in.mouse_button_pressed {
+                    if let Some(world_pos) = &tw_in.mouse_world_position {
+                        if tw_image.mouse_offset.is_none() {
+                            let offset = (transform.translation().x - world_pos.0, transform.translation().y - world_pos.1);
+                            tw_image.mouse_offset = Some(offset);
+                        }
+                        if let Some(offset) = tw_image.mouse_offset {
+                            transform.set_translation_x(world_pos.0 + offset.0);
+                            transform.set_translation_y(world_pos.1 + offset.1);
+                        }
+                    }
+                } else {
+                    tw_image.mouse_offset = None
                 }
-                if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-                    let world_pos = {
-                        Some((tw_input_handler.mouse_world_pos.x, tw_input_handler.mouse_world_pos.y))
-                    };
-                    let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
-                    let (x2, y2) = world_pos.unwrap();
-                    let dist = ((x2 - x), (y2 - y));
-                    let delta_x = dist.0 - tw_input_handler.last_mouse_dist.0;
-                    let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
-                    tw_input_handler.last_mouse_dist = (dist.0, dist.1);
-                    transform.prepend_translation_x(delta_x);
-                    transform.prepend_translation_y(delta_y);
-                }
-            // reset of position data mouse and active image
-            } else if input.key_is_down(VirtualKeyCode::LAlt) {
-                tw_input_handler.set_last_mouse_pos(None);
-                tw_input_handler.last_mouse_dist = (0.0, 0.0);
+            } else {
+                tw_image.mouse_offset = None
             }
         }
     }

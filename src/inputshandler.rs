@@ -104,13 +104,28 @@ pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {
     }
 }
 
-pub fn mouse_released(event: &Event) -> Option<MouseButton> {
+pub fn alt_mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
             WindowEvent::MouseInput { state: ElementState::Released, button, modifiers: ModifiersState {
                 shift: false,
                 ctrl: false,
                 alt: true,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+pub fn mouse_released(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Released, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: false,
+                alt: false,
                 logo: false}, ..
             } => Some(button.clone()),
             _ => None,
@@ -132,5 +147,6 @@ pub fn mouse_released(event: &Event) -> Option<MouseButton> {
 pub struct TwInputsHandler {
     pub last_dropped_file_path: Option<String>,
     pub mouse_position: Option<(f32, f32)>,
+    pub mouse_world_position: Option<(f32, f32)>,
     pub mouse_button_pressed: Option<MouseButton>,
 }

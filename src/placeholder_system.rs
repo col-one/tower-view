@@ -73,11 +73,10 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                     position.set_translation_x(world_position.x);
                     position.set_translation_y(world_position.y);
                     position.set_translation_z(world_position.z);
-                    // todo: use screen to world position.
-                    let sprite = sprite_twplaceholder(&loader, &texture, &sprite);
+//                    let sprite = sprite_twplaceholder(&loader, &texture, &sprite);
                     world.create_entity(&*entities)
                         .with(position)
-                        .with(sprite)
+//                        .with(sprite)
                         .with(TwPlaceHolder { twimage_path: drop_file.clone(), to_cache: true })
                         .build();
                     tw_in.last_dropped_file_path = None;

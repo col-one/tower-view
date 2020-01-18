@@ -16,7 +16,7 @@ use crate::camera;
 use crate::inputshandler;
 use crate::image::TwImage;
 use crate::args_cli::Opt;
-use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed, mouse_released};
+use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed, mouse_released, alt_mouse_released};
 use crate::placeholder;
 use crate::inputshandler::TwInputHandler;
 use std::sync::mpsc::{Sender, Receiver};
@@ -107,6 +107,13 @@ impl<'a> SimpleState for Tower {
             }
             // mouse released event
             if let Some(button) = mouse_released(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.mouse_button_pressed = None;
+                }
+            }
+            // alt mouse release
+            if let Some(button) = alt_mouse_released(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.mouse_button_pressed = None;

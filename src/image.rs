@@ -61,6 +61,7 @@ pub struct TwImage {
     pub red: f32,
     pub green: f32,
     pub blue: f32,
+    pub mouse_offset: Option<(f32, f32)>
 }
 
 impl  TwImage {
@@ -78,6 +79,7 @@ impl  TwImage {
             red: 1.0,
             green: 1.0,
             blue: 1.0,
+            mouse_offset: None
         }
     }
 }
