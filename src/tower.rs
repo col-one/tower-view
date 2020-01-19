@@ -4,7 +4,7 @@ use amethyst::{
     prelude::*,
     input,
     renderer::rendy::hal::pso::Rect,
-    core::transform::Transform,
+    core::{Stopwatch, transform::Transform},
     winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
     renderer::types::TextureData,
     renderer::{ActiveCamera},
@@ -16,7 +16,9 @@ use crate::camera;
 use crate::inputshandler;
 use crate::image::TwImage;
 use crate::args_cli::Opt;
-use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed, mouse_released, alt_mouse_released};
+use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed,
+                           mouse_released, alt_mouse_released, key_pressed, key_released,
+                           ctrl_mouse_pressed, ctrl_mouse_released};
 use crate::placeholder;
 use crate::inputshandler::TwInputHandler;
 use std::sync::mpsc::{Sender, Receiver};
@@ -76,6 +78,7 @@ impl<'a> SimpleState for Tower {
         world.insert(tower_data);
         // init twinputshandler
         let mut tw_inputs_handler = TwInputsHandler::default();
+        tw_inputs_handler.stopwatch.start();
         world.insert(tw_inputs_handler);
         camera::initialise_camera(world);
     }
@@ -102,7 +105,28 @@ impl<'a> SimpleState for Tower {
             if let Some(button) = alt_mouse_pressed(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
-                    tw_in.mouse_button_pressed = Some(button);
+                    tw_in.alt_mouse_button_pressed = Some(button);
+                }
+            }
+            // alt mouse release
+            if let Some(button) = alt_mouse_released(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.alt_mouse_button_pressed = None;
+                }
+            }
+            // ctrl mouse pressed event
+            if let Some(button) = ctrl_mouse_pressed(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.ctrl_mouse_button_pressed = Some(button);
+                }
+            }
+            // ctrl mouse release
+            if let Some(button) = ctrl_mouse_released(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.ctrl_mouse_button_pressed = None;
                 }
             }
             // mouse released event
@@ -110,13 +134,25 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.mouse_button_pressed = None;
+                    tw_in.alt_mouse_button_pressed = None;
+                    tw_in.ctrl_mouse_button_pressed = None;
                 }
             }
-            // alt mouse release
-            if let Some(button) = alt_mouse_released(&event) {
+            // keyboard pressed
+            if let Some(key_code) = key_pressed(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
-                    tw_in.mouse_button_pressed = None;
+                    tw_in.keys_pressed.push(key_code);
+                }
+            }
+            // keyboard released
+            if let Some(key_code) = key_released(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    if let Some(index) = tw_in.keys_pressed.iter().position(|x| *x == key_code) {
+                        let removed_key = tw_in.keys_pressed.remove(index);
+                        tw_in.last_key_released = Some(removed_key);
+                    }
                 }
             }
         }

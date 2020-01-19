@@ -3,11 +3,13 @@ use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
 use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}};
 use amethyst::{
-        winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition, ElementState, MouseButton, WindowId, DeviceId, ModifiersState},
+        winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition, ElementState, MouseButton,
+                KeyboardInput, WindowId, DeviceId, ModifiersState},
 };
 
 use uuid::Uuid;
 use crate::image::TwImage;
+use std::time::Duration;
 
 
 #[derive(PartialEq)]
@@ -119,6 +121,36 @@ pub fn alt_mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+pub fn ctrl_mouse_pressed(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Pressed, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: true,
+                alt: false,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+pub fn ctrl_mouse_released(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Released, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: true,
+                alt: false,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 pub fn mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -134,19 +166,56 @@ pub fn mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+pub fn key_pressed(event: &Event) -> Option<VirtualKeyCode> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::KeyboardInput { input: KeyboardInput {
+                        virtual_keycode,
+                        state: ElementState::Pressed,
+                        .. }, .. } => *virtual_keycode,
+            _ => None,
+        },
+        _ => None,
+    }
+}
 
-//
-//pub fn mouse_press(button: MouseButton) -> Event {
-//    match *event {
-//        mouse_event(button, ElementState::Pressed)
-//    }
-//}
-
+pub fn key_released(event: &Event) -> Option<VirtualKeyCode> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::KeyboardInput { input: KeyboardInput {
+                        virtual_keycode,
+                        state: ElementState::Released,
+                        .. }, .. } => *virtual_keycode,
+            _ => None,
+        },
+        _ => None,
+    }
+}
 
 #[derive(Default)]
 pub struct TwInputsHandler {
+    pub stopwatch: Stopwatch,
     pub last_dropped_file_path: Option<String>,
     pub mouse_position: Option<(f32, f32)>,
     pub mouse_world_position: Option<(f32, f32)>,
     pub mouse_button_pressed: Option<MouseButton>,
+    pub alt_mouse_button_pressed: Option<MouseButton>,
+    pub ctrl_mouse_button_pressed: Option<MouseButton>,
+    pub keys_pressed: Vec<VirtualKeyCode>,
+    pub last_key_released: Option<VirtualKeyCode>,
+    pub twimages_under_mouse: Vec<(Uuid, f32)>,
+    pub twimage_active: Option<Uuid>,
 }
+//impl TwInputsHandler {
+//    pub fn get_elapsed_time(&self) -> Duration {
+//        if let Some(timer) = &self.stopwatch {
+//            return timer.elapsed()
+//        }
+//        Duration::from_secs(0)
+//    }
+//    pub fn restart_time(&mut self) {
+//        if let Some(mut timer) = &self.stopwatch {
+//            timer.restart();
+//        }
+//    }
+//}

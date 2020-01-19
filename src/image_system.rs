@@ -32,112 +32,20 @@ use crate::raycasting_system::screen_to_world;
 
 
 #[derive(SystemDesc)]
-pub struct TwImageActiveSystem;
-
-impl<'s> System<'s> for TwImageActiveSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
-                       WriteStorage<'s, TwImage>,
-                       ReadStorage<'s, Transform>,
-                       ReadStorage<'s, SpriteRender>,
-                       Read<'s, AssetStorage<SpriteSheet>>,
-                       WriteStorage<'s, TwActiveComponent>,
-                       Entities<'s>);
-    fn run(&mut self, (
-        input,
-        mut world,
-        mut tw_images,
-        transforms,
-        sprites,
-        sprite_sheets,
-        mut twactives,
-        entities
-    ): Self::SystemData) {
-        let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
-        let mut remove_active = false;
-        for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
-            let mouse_world_position = tw_input_handler.mouse_world_pos;
-            let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
-            let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-            let (min_x, max_x, min_y, max_y) = {
-                (
-                    transform.translation().x - (sprite.width * 0.5),
-                    transform.translation().x + (sprite.width * 0.5),
-                    transform.translation().y - (sprite.height * 0.5),
-                    transform.translation().y + (sprite.height * 0.5),
-                )
-            };
-            // if mouse inside sprite
-            if mouse_world_position.x > min_x
-                && mouse_world_position.x < max_x
-                && mouse_world_position.y > min_y
-                && mouse_world_position.y < max_y
-            {
-                if !tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
-                    tw_input_handler.twimages_under_mouse.push((tw_image.id, transform.translation().z));
-                }
-            } else {
-                if tw_input_handler.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
-                    let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
-                    tw_input_handler.twimages_under_mouse.remove(index);
-                }
-            }
-            // set as active image the highest image z order
-            tw_input_handler.twimages_under_mouse.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Equal));
-            if tw_input_handler.twimages_under_mouse.is_empty() {
-                tw_input_handler.set_twimage_active(None);
-            } else {
-                if tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-                    if !twactives.contains(entity) {
-                        // add active tw_image component
-                        twactives.insert(entity, TwActiveComponent).expect("Failed to add TwActiveComponent.");
-                    }
-                } else {
-                    if twactives.remove(entity).is_some() {
-                        twactives.clear();
-                    }
-                }
-            }
-            tw_image.z_order = transform.translation().z;
-        }
-        // prepare remove active
-        if input.key_is_down(VirtualKeyCode::Escape) { remove_active = true }
-        let mut entities_to_remove = Vec::new();
-        for (twactive, entity) in (&mut twactives, &*entities).join() {
-            if tw_input_handler.twimages_under_mouse.is_empty() {
-                entities_to_remove.push(entity);
-            }
-        }
-        if remove_active {
-            for entity in entities_to_remove {
-                // remove active tw_image component
-                twactives.remove(entity).expect("Failed to remove TwActiveComponent.");
-            }
-        }
-    }
-}
-
-
-#[derive(SystemDesc)]
 pub struct TwImageMoveSystem;
 
 impl<'s> System<'s> for TwImageMoveSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
-                       WriteStorage<'s, TwImage>,
+    type SystemData = (WriteStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
                        Read<'s, TwInputsHandler>);
     fn run(&mut self, (
-            input,
-            mut world,
             mut tw_images,
             mut transforms,
             tw_in,
         ): Self::SystemData) {
-        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
         for (transform, tw_image) in (&mut transforms, &mut tw_images).join() {
-            if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
-                if let Some(button) = &tw_in.mouse_button_pressed {
+            if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
+                if let Some(button) = &tw_in.alt_mouse_button_pressed {
                     if let Some(world_pos) = &tw_in.mouse_world_position {
                         if tw_image.mouse_offset.is_none() {
                             let offset = (transform.translation().x - world_pos.0, transform.translation().y - world_pos.1);
@@ -203,26 +111,23 @@ impl<'s> System<'s> for TwImageLayoutSystem {
 pub struct TwImageDeleteSystem;
 
 impl<'s> System<'s> for TwImageDeleteSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
+    type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwImage>,
                        Entities<'s>);
     fn run(&mut self, (
-        input,
-        mut world,
+        mut tw_in,
         tw_images,
         entities
     ): Self::SystemData) {
-        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
         for (tw_image, entity) in (&tw_images, &*entities).join() {
-            if time::Duration::from_millis(100) <= tw_input_handler.stopwatch.elapsed() {
-                if input.key_is_down(VirtualKeyCode::Delete) {
-                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+            if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
+                if tw_in.keys_pressed.contains(&VirtualKeyCode::Delete) && tw_in.keys_pressed.len() == 1 {
+                    if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
                         info!("TwImage is deleting, {:?}", entity);
-                        let index = tw_input_handler.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
-                        tw_input_handler.twimages_under_mouse.remove(index);
+                        let index = tw_in.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
+                        tw_in.twimages_under_mouse.remove(index);
                         entities.delete(entity).unwrap();
-                        tw_input_handler.stopwatch.restart();
+                        tw_in.stopwatch.restart();
                     }
                 }
             }

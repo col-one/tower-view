@@ -39,10 +39,10 @@ use crate::args_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
 use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
                            CameraZoomNavigationSystem, CameraFitNavigationSystem};
-use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageActiveSystem, TwImageDeleteSystem,
+use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
                           TwImageNextSystem};
-use crate::raycasting_system::{TwMouseRaycastSystem, TwInputsHandlerScreenToWorldSystem};
+use crate::raycasting_system::{TwImageActiveSystem, TwMouseRaycastSystem, TwInputsHandlerScreenToWorldSystem};
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
