@@ -140,35 +140,30 @@ impl<'s> System<'s> for TwImageDeleteSystem {
 pub struct TwImageToFrontSystem;
 
 impl<'s> System<'s> for TwImageToFrontSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
+    type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwImage>,
-                       WriteStorage<'s, Transform>,
-                       ReadStorage<'s, SpriteRender>,);
+                       WriteStorage<'s, Transform>);
     fn run(&mut self, (
-        input,
-        mut world,
+        mut tw_in,
         tw_images,
         mut transforms,
-        sprites
     ): Self::SystemData) {
-        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
         let mut images = {
             let (img) = (&tw_images).join();
             let mut images = img.map(|t| t).collect::<Vec<_>>();
             images.sort_by(|a, b| a.z_order.partial_cmp(&b.z_order).unwrap_or(Equal));
             images
         };
-        for (tw_image, transform, _) in (&tw_images, &mut transforms, &sprites).join() {
+        for (tw_image, transform) in (&tw_images, &mut transforms).join() {
             let mut current_index = tw_image.z_order as usize;
-            if input.key_is_down(VirtualKeyCode::F) && input.key_is_down(VirtualKeyCode::LShift) {
-                if time::Duration::from_millis(500) <= tw_input_handler.stopwatch.elapsed() {
-                    if !tw_input_handler.twimages_under_mouse.is_empty() && tw_input_handler.twimages_under_mouse[0].0 == tw_image.id {
+            if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
+                if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
+                    if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
                         let i = images.iter().position(|x| x.id == tw_image.id).unwrap();
                         let pop = images.swap_remove(i);
                         images.push(pop);
                         current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
-                        tw_input_handler.stopwatch.restart();
+                        tw_in.stopwatch.restart();
                     }
                 }
             }
@@ -284,42 +279,43 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
 pub struct TwImageNextSystem;
 
 impl<'s> System<'s> for TwImageNextSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+    type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
                        Entities<'s>,
                        Write<'s, TwInputHandler>,
                        Read<'s, TowerData>,
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
-        input,
+        mut tw_in,
         mut tw_images,
         mut entities,
         mut tw_input_handler,
         tower_data,
         world,
     ): Self::SystemData) {
-        let (tw_image, entity) = (&mut tw_images, &*entities).join().last().unwrap();
-        let mut index = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)).unwrap() as i16;
-        if input.key_is_down(VirtualKeyCode::Right) {
-            if time::Duration::from_millis(200) <= tw_input_handler.stopwatch.elapsed() {
-                index += 1;
-                if index < tower_data.files_order.len() as i16 {
-                    let new_path = tower_data.files_order[index as usize].clone();
-                    info!("{:?}", new_path);
-                    world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+        if let Some((tw_image, entity)) = (&mut tw_images, &*entities).join().last() {
+            let mut index = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)).unwrap() as i16;
+            if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
+                if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                    index += 1;
+                    if index < tower_data.files_order.len() as i16 {
+                        let new_path = tower_data.files_order[index as usize].clone();
+                        info!("{:?}", new_path);
+                        world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+                    }
+                    tw_in.stopwatch.restart();
                 }
-                tw_input_handler.stopwatch.restart();
             }
-        }
-        if input.key_is_down(VirtualKeyCode::Left) {
-            if time::Duration::from_millis(200) <= tw_input_handler.stopwatch.elapsed() {
-                index -= 1;
-                if index >= 0 {
-                    let new_path = tower_data.files_order[index as usize].clone();
-                    info!("{:?}", new_path);
-                    world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+            if tw_in.keys_pressed.contains(&VirtualKeyCode::Left) {
+                if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                    index -= 1;
+                    if index >= 0 {
+                        let new_path = tower_data.files_order[index as usize].clone();
+                        info!("{:?}", new_path);
+                        world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+                    }
+                    tw_in.stopwatch.restart();
                 }
-                tw_input_handler.stopwatch.restart();
             }
         }
     }
