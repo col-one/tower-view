@@ -91,6 +91,11 @@ pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
     }
 }
 
+pub fn get_delta_position(position: (f32, f32), position2: (f32, f32)) -> (f32, f32) {
+    let dist = ((position2.0 - position.0), (position2.1 - position.1));
+    (dist.0, dist.1)
+}
+
 pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -151,6 +156,21 @@ pub fn ctrl_mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+pub fn mouse_pressed(event: &Event) -> Option<MouseButton> {
+    match *event {
+        Event::WindowEvent { ref event, .. } => match event {
+            WindowEvent::MouseInput { state: ElementState::Pressed, button, modifiers: ModifiersState {
+                shift: false,
+                ctrl: false,
+                alt: false,
+                logo: false}, ..
+            } => Some(button.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 pub fn mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -199,23 +219,21 @@ pub struct TwInputsHandler {
     pub mouse_position: Option<(f32, f32)>,
     pub mouse_world_position: Option<(f32, f32)>,
     pub mouse_button_pressed: Option<MouseButton>,
+    pub mouse_position_history: Vec<(f32, f32)>,
     pub alt_mouse_button_pressed: Option<MouseButton>,
     pub ctrl_mouse_button_pressed: Option<MouseButton>,
     pub keys_pressed: Vec<VirtualKeyCode>,
     pub last_key_released: Option<VirtualKeyCode>,
     pub twimages_under_mouse: Vec<(Uuid, f32)>,
     pub twimage_active: Option<Uuid>,
+    pub window_zoom_factor: f32,
 }
-//impl TwInputsHandler {
-//    pub fn get_elapsed_time(&self) -> Duration {
-//        if let Some(timer) = &self.stopwatch {
-//            return timer.elapsed()
-//        }
-//        Duration::from_secs(0)
-//    }
-//    pub fn restart_time(&mut self) {
-//        if let Some(mut timer) = &self.stopwatch {
-//            timer.restart();
-//        }
-//    }
-//}
+
+impl TwInputsHandler {
+    pub fn get_mouse_delta_distance(&self) -> (f32, f32) {
+        let (x, y) = self.mouse_position_history[0];
+        let (x2, y2) = self.mouse_position_history[1];
+        let dist = ((x2 - x), (y2 - y));
+        dist
+    }
+}

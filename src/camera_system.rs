@@ -13,38 +13,33 @@ use amethyst::{
 use std::time::Duration;
 
 use crate::camera::TwCamera;
-use crate::inputshandler::TwInputHandler;
+use crate::inputshandler::{TwInputHandler, TwInputsHandler};
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 
 
-#[derive(SystemDesc)]
-pub struct CameraTranslateNavigationSystem;
+#[derive(SystemDesc, Default)]
+pub struct CameraTranslateNavigationSystem {
+    locked_mouse: (f32, f32)
+}
 
 impl<'s> System<'s> for CameraTranslateNavigationSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
+    type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
                        WriteStorage<'s, Transform>,);
-
-    fn run(&mut self, (input, mut world, tw_cameras, mut transforms): Self::SystemData) {
-        let mut tw_input_handler = world.entry::<TwInputHandler>().or_insert_with(|| TwInputHandler::default());
+    fn run(&mut self, (
+        tw_in,
+        tw_cameras,
+        mut transforms
+    ): Self::SystemData) {
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
-            if input.key_is_down(VirtualKeyCode::Space) && input.mouse_button_is_down(MouseButton::Left) {
-                if tw_input_handler.last_mouse_pos.is_none() {
-                    tw_input_handler.set_last_mouse_pos(input.mouse_position());
-                } else {
-                    let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
-                    let (x2, y2) = input.mouse_position().unwrap();
-                    let dist = ((x2 - x), (y2 - y));
-                    let delta_x = dist.0 - tw_input_handler.last_mouse_dist.0;
-                    let delta_y = dist.1 - tw_input_handler.last_mouse_dist.1;
-                    tw_input_handler.last_mouse_dist = (dist.0, dist.1);
-                    transform.prepend_translation_x(-delta_x);
-                    transform.prepend_translation_y(delta_y);
+            if tw_in.keys_pressed.contains(&VirtualKeyCode::Space) && !tw_in.mouse_button_pressed.is_none() {
+                if self.locked_mouse == tw_in.mouse_position_history[1] {
+                    break
                 }
-            } else if input.key_is_down(VirtualKeyCode::Space) {
-                tw_input_handler.set_last_mouse_pos(None);
-                tw_input_handler.last_mouse_dist = (0.0, 0.0);
+                let dist = tw_in.get_mouse_delta_distance();
+                transform.prepend_translation_x(-(dist.0));
+                transform.prepend_translation_y((dist.1));
+                self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
     }
@@ -55,21 +50,22 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
 pub struct CameraKeepRatioSystem;
 
 impl<'s> System<'s> for CameraKeepRatioSystem {
-    type SystemData = (
-    WriteStorage<'s, Camera>,
-    ReadExpect<'s, Window>,
-    Read<'s, World>,
-    );
+    type SystemData = (WriteStorage<'s, Camera>,
+                       ReadExpect<'s, Window>,
+                       Read<'s, TwInputsHandler>);
 
-    fn run(&mut self, (mut camera, window, world): Self::SystemData) {
-        let tw_input_handler = world.fetch::<TwInputHandler>();
+    fn run(&mut self, (
+        mut camera,
+        window,
+        tw_in
+    ): Self::SystemData) {
         let window_size = window.get_inner_size().unwrap();
         let camera = (&mut camera).join().next().unwrap();
         let proj = Projection::orthographic(
-            -window_size.width as f32 / (2.0 * tw_input_handler.zoomfactor),
-            window_size.width as f32 / (2.0 * tw_input_handler.zoomfactor),
-            -window_size.height as f32 / (2.0 * tw_input_handler.zoomfactor),
-            window_size.height as f32 / (2.0 * tw_input_handler.zoomfactor),
+            -window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
+            window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
+            -window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
+            window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
             0.1,
             6000.0,
         );
@@ -78,29 +74,24 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
 }
 
 
-#[derive(SystemDesc)]
-pub struct CameraZoomNavigationSystem;
+#[derive(SystemDesc, Default)]
+pub struct CameraZoomNavigationSystem {
+    locked_mouse: (f32, f32)
+}
 
 impl<'s> System<'s> for CameraZoomNavigationSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
+    type SystemData = (Write<'s, TwInputsHandler>,
                        );
-    fn run(&mut self, (input, mut world): Self::SystemData) {
-        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
-        if input.key_is_down(VirtualKeyCode::LControl) && input.mouse_button_is_down(MouseButton::Left) {
-            if tw_input_handler.last_mouse_pos.is_none() {
-                tw_input_handler.set_last_mouse_pos(input.mouse_position());
-            } else {
-                let (x, y) = tw_input_handler.last_mouse_pos.unwrap();
-                let (x2, y2) = input.mouse_position().unwrap();
-                let dist = Vector2::new((x2 - x), (y2 - y));
-                let delta = Vector2::new(dist.x - tw_input_handler.last_mouse_dist.0, dist.y - tw_input_handler.last_mouse_dist.1);
-                tw_input_handler.last_mouse_dist = (dist.x, dist.y);
-                tw_input_handler.zoomfactor = (tw_input_handler.zoomfactor - (delta.y * 0.01)).max(0.01);
+    fn run(&mut self, (
+        mut tw_in,
+    ): Self::SystemData) {
+        if let Some(button) = tw_in.ctrl_mouse_button_pressed {
+            if self.locked_mouse == tw_in.mouse_position_history[1] {
+                return
             }
-        } else if input.key_is_down(VirtualKeyCode::LControl) {
-            tw_input_handler.set_last_mouse_pos(None);
-            tw_input_handler.last_mouse_dist = (0.0, 0.0);
+            let dist = tw_in.get_mouse_delta_distance();
+            tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
+            self.locked_mouse = tw_in.mouse_position_history[1];
         }
     }
 }
@@ -110,19 +101,23 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
 pub struct CameraFitNavigationSystem;
 
 impl<'s> System<'s> for CameraFitNavigationSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
-                       Write<'s, World>,
+    type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
                        WriteStorage<'s, Transform>,);
 
-    fn run(&mut self, (input, mut world, tw_cameras, mut transforms): Self::SystemData) {
-        let mut tw_input_handler = world.fetch_mut::<TwInputHandler>();
-        if input.key_is_down(VirtualKeyCode::F) && !input.key_is_down(VirtualKeyCode::LShift){
-            tw_input_handler.zoomfactor = 1.0;
-            let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
-            transform.set_translation_x(tw_input_handler.middlepoint.x);
-            transform.set_translation_y(tw_input_handler.middlepoint.y);
-            info!("{:?}", tw_input_handler.middlepoint);
+    fn run(&mut self, (
+        mut tw_in,
+        tw_cameras,
+        mut transforms
+    ): Self::SystemData) {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::F) {
+            if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
+                tw_in.window_zoom_factor = 1.0;
+//                let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
+//                transform.set_translation_x(tw_input_handler.middlepoint.x);
+//                transform.set_translation_y(tw_input_handler.middlepoint.y);
+//                info!("{:?}", tw_input_handler.middlepoint);
+            }
         }
     }
 }

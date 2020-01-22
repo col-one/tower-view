@@ -2,7 +2,7 @@ use structopt::StructOpt;
 use amethyst::{
     ecs::prelude::*,
     prelude::*,
-    input,
+    input::{InputHandler, StringBindings},
     renderer::rendy::hal::pso::Rect,
     core::{Stopwatch, transform::Transform},
     winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
@@ -18,18 +18,20 @@ use crate::image::TwImage;
 use crate::args_cli::Opt;
 use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed,
                            mouse_released, alt_mouse_released, key_pressed, key_released,
-                           ctrl_mouse_pressed, ctrl_mouse_released};
+                           ctrl_mouse_pressed, ctrl_mouse_released, mouse_pressed, get_delta_position};
 use crate::placeholder;
 use crate::inputshandler::TwInputHandler;
+use crate::utils::{list_valid_files, is_valid_file};
+
+use crate::placeholder::TwPlaceHolder;
 use std::sync::mpsc::{Sender, Receiver};
 use std::future::Future;
 use std::sync::{Arc, Mutex};
-use crate::placeholder::TwPlaceHolder;
 use std::ffi::{OsStr, OsString};
 use std::collections::HashMap;
-
-use crate::utils::{list_valid_files, is_valid_file};
 use std::path::Path;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
@@ -79,6 +81,7 @@ impl<'a> SimpleState for Tower {
         // init twinputshandler
         let mut tw_inputs_handler = TwInputsHandler::default();
         tw_inputs_handler.stopwatch.start();
+        tw_inputs_handler.window_zoom_factor = 1.0;
         world.insert(tw_inputs_handler);
         camera::initialise_camera(world);
     }
@@ -99,6 +102,14 @@ impl<'a> SimpleState for Tower {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     let screen = data.world.fetch::<ScreenDimensions>();
                     tw_in.mouse_position = Some(((mouse_pos.x as f32) * screen.hidpi_factor() as f32, (mouse_pos.y as f32) * screen.hidpi_factor() as f32));
+                    let p = tw_in.mouse_position.unwrap().clone();
+                    if tw_in.mouse_position_history.len() == 2 {
+                        tw_in.mouse_position_history.remove(0);
+                        tw_in.mouse_position_history.insert(1, p);
+
+                    } else {
+                        tw_in.mouse_position_history.push(p);
+                    }
                 }
             }
             // alt mouse pressed event
@@ -127,6 +138,13 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.ctrl_mouse_button_pressed = None;
+                }
+            }
+            // mouse pressed event
+            if let Some(button) = mouse_pressed(&event) {
+                {
+                    let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
+                    tw_in.mouse_button_pressed = Some(button);
                 }
             }
             // mouse released event
