@@ -20,7 +20,6 @@ use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_
                            mouse_released, alt_mouse_released, key_pressed, key_released,
                            ctrl_mouse_pressed, ctrl_mouse_released, mouse_pressed, get_delta_position};
 use crate::placeholder;
-use crate::inputshandler::TwInputHandler;
 use crate::utils::{list_valid_files, is_valid_file};
 
 use crate::placeholder::TwPlaceHolder;
@@ -131,6 +130,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.ctrl_mouse_button_pressed = Some(button);
+                    tw_in.mouse_world_clicked_position = tw_in.mouse_world_position;
                 }
             }
             // ctrl mouse release
@@ -145,6 +145,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.mouse_button_pressed = Some(button);
+                    tw_in.mouse_world_clicked_position = tw_in.mouse_world_position;
                 }
             }
             // mouse released event
@@ -154,6 +155,7 @@ impl<'a> SimpleState for Tower {
                     tw_in.mouse_button_pressed = None;
                     tw_in.alt_mouse_button_pressed = None;
                     tw_in.ctrl_mouse_button_pressed = None;
+                    tw_in.mouse_world_clicked_position = None;
                 }
             }
             // keyboard pressed
@@ -167,10 +169,7 @@ impl<'a> SimpleState for Tower {
             if let Some(key_code) = key_released(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
-                    if let Some(index) = tw_in.keys_pressed.iter().position(|x| *x == key_code) {
-                        let removed_key = tw_in.keys_pressed.remove(index);
-                        tw_in.last_key_released = Some(removed_key);
-                    }
+                    tw_in.keys_pressed.retain(|x| *x != key_code);
                 }
             }
         }

@@ -37,12 +37,11 @@ mod placeholder_system;
 
 use crate::args_cli::Opt;
 use crate::tower::{Tower, BACKGROUNDCOLOR};
-use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem,
-                           CameraZoomNavigationSystem, CameraFitNavigationSystem};
+use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
                           TwImageNextSystem};
-use crate::raycasting_system::{TwImageActiveSystem, TwMouseRaycastSystem, TwInputsHandlerScreenToWorldSystem};
+use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
@@ -81,10 +80,11 @@ fn main() -> amethyst::Result<()> {
         .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system", "image_active_system"])
         .with(CameraZoomNavigationSystem::default(), "camera_zoom_system", &["input_system", "image_active_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system", "image_active_system"])
-        .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
+        .with(CameraCenterSystem::default(), "camera_center_system", &["input_system", "image_active_system"])
+//        .with(TwMouseRaycastSystem, "mouse_raycasting_system", &["input_system"])
         .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
-        .with(SceneBoundingBox, "scene_bounding_system", &["input_system", "image_active_system"])
+//        .with(SceneBoundingBox, "scene_bounding_system", &["input_system", "image_active_system"])
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["input_system", "image_active_system"])
         .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"])

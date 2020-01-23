@@ -3,7 +3,6 @@ use amethyst::derive::SystemDesc;
 use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings};
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
 use amethyst::ecs::prelude::*;
-use amethyst::window::ScreenDimensions;
 use amethyst::renderer::rendy::{wsi::winit::MouseButton, texture::TextureBuilder};
 use amethyst::renderer::{camera::{ActiveCamera, Camera, Projection},
                         sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat, Sprite},
@@ -19,7 +18,7 @@ use uuid::Uuid;
 use std::{thread, time};
 
 use crate::image::{TwImage, TwActiveComponent};
-use crate::inputshandler::{MouseState, TwInputHandler, TwInputsHandler};
+use crate::inputshandler::{TwInputsHandler};
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::placeholder::TwPlaceHolder;
 
@@ -282,14 +281,12 @@ impl<'s> System<'s> for TwImageNextSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
                        Entities<'s>,
-                       Write<'s, TwInputHandler>,
                        Read<'s, TowerData>,
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
         mut tw_in,
         mut tw_images,
         mut entities,
-        mut tw_input_handler,
         tower_data,
         world,
     ): Self::SystemData) {

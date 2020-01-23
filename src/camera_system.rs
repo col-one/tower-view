@@ -1,19 +1,19 @@
 use amethyst::{
     prelude::*,
+    window::ScreenDimensions,
     input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings},
     core::{SystemDesc, Transform, math::{Vector3, Vector2}},
     derive::SystemDesc,
     ecs::{Join, Read, System, SystemData, World, WriteStorage},
     ecs::prelude::*,
-    renderer::rendy::wsi::winit::MouseButton,
+    renderer::rendy::wsi::winit::{MouseButton, Window, dpi::LogicalPosition},
     renderer::camera::{ActiveCamera, Camera, Projection},
-    renderer::rendy::wsi::winit::Window,
     renderer::rendy::hal::pso::Rect,
 };
 use std::time::Duration;
 
 use crate::camera::TwCamera;
-use crate::inputshandler::{TwInputHandler, TwInputsHandler};
+use crate::inputshandler::{TwInputsHandler};
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 
 
@@ -76,22 +76,66 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
 
 #[derive(SystemDesc, Default)]
 pub struct CameraZoomNavigationSystem {
-    locked_mouse: (f32, f32)
+    locked_mouse: (f32, f32),
 }
 
 impl<'s> System<'s> for CameraZoomNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
+                       ReadStorage<'s, Camera>,
+                       WriteStorage<'s, Transform>,
+                       WriteExpect<'s, Window>,
                        );
     fn run(&mut self, (
         mut tw_in,
+        tw_cameras,
+        mut transforms,
+        mut window,
     ): Self::SystemData) {
-        if let Some(button) = tw_in.ctrl_mouse_button_pressed {
-            if self.locked_mouse == tw_in.mouse_position_history[1] {
-                return
+        for (_, transform) in (&tw_cameras, &mut transforms).join() {
+            if let Some(button) = tw_in.ctrl_mouse_button_pressed {
+                if self.locked_mouse == tw_in.mouse_position_history[1] {
+                    return
+                }
+                let dist = tw_in.get_mouse_delta_distance();
+                tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
+                self.locked_mouse = tw_in.mouse_position_history[1];
             }
-            let dist = tw_in.get_mouse_delta_distance();
-            tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
-            self.locked_mouse = tw_in.mouse_position_history[1];
+        }
+    }
+}
+
+
+#[derive(SystemDesc, Default)]
+pub struct CameraCenterSystem {
+    released: bool
+}
+
+impl<'s> System<'s> for CameraCenterSystem {
+    type SystemData = (Write<'s, TwInputsHandler>,
+                       ReadStorage<'s, Camera>,
+                       WriteStorage<'s, Transform>,
+                       WriteExpect<'s, Window>,
+                       );
+    fn run(&mut self, (
+        mut tw_in,
+        tw_cameras,
+        mut transforms,
+        mut window,
+    ): Self::SystemData) {
+        for (_, transform) in (&tw_cameras, &mut transforms).join() {
+            if let Some(button) = tw_in.mouse_button_pressed {
+                if !self.released && tw_in.keys_pressed.len() == 0 {
+                    window.set_cursor_position(LogicalPosition::new((window.get_inner_size().unwrap().width * 0.5) as f64,
+                                                                    (window.get_inner_size().unwrap().height * 0.5) as f64));
+                    if let Some(mouse_world_click) = tw_in.mouse_world_clicked_position {
+                        transform.set_translation_x(mouse_world_click.0);
+                        transform.set_translation_y(mouse_world_click.1);
+                    }
+                }
+                self.released = true;
+            } else {
+                self.released = false;
+            }
         }
     }
 }
