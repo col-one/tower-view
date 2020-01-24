@@ -3,7 +3,6 @@ use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteS
     rendy::hal::image::{Kind, ViewKind, Filter, WrapMode, Anisotropic, SamplerInfo, PackedColor},
     rendy::hal::format,
     types::TextureData,
-    rendy::hal::pso::Rect,
     Format,
     resources::Tint,
     palette::Srgba,

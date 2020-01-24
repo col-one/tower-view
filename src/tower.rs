@@ -3,13 +3,13 @@ use amethyst::{
     ecs::prelude::*,
     prelude::*,
     input::{InputHandler, StringBindings},
-    renderer::rendy::hal::pso::Rect,
-    core::{Stopwatch, transform::Transform},
+    core::{Stopwatch, transform::Transform, math::Point2},
     winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
     renderer::types::TextureData,
     renderer::{ActiveCamera},
     window::ScreenDimensions,
 };
+use geo::{Rect, Coordinate};
 
 use crate::image;
 use crate::camera;
@@ -35,11 +35,13 @@ use std::time::Duration;
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
+pub const MAXHEIGHT: f32 = 70000.0;
 
 
 pub struct TowerData {
     pub twimage_count: f32,
-    pub scene_rect: Rect,
+    pub scene_rect: Rect<f32>,
+    pub scene_middle_point: Point2<f32>,
     pub cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
     pub working_dir: OsString,
     pub file_to_cache: Vec<OsString>,
@@ -50,11 +52,12 @@ impl Default for TowerData {
     fn default() -> Self {
         Self {
             twimage_count: 0.0,
-            scene_rect: Rect{x:0i16, y:0i16, w:0i16, h:0i16},
+            scene_rect: Rect::new((0.0, 0.0), (0.0, 0.0)),
             cache: Arc::new(Mutex::new(HashMap::new())),
             working_dir: OsStr::new(".").to_owned(),
             file_to_cache: Vec::new(),
             files_order: Vec::new(),
+            scene_middle_point: Point2::new(0.0, 0.0)
         }
     }
 }

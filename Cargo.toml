@@ -14,6 +14,7 @@ log = "0.4.8"
 chrono = "0.4.10"
 env_logger = "0.7.1"
 structopt = { version = "0.3.5", default_features = false, features = ["color", "wrap_help", "doc"] }
+geo = "0.12.2"
 
 [dependencies.amethyst-imgui]
 version = "0.6.0"
