@@ -156,11 +156,13 @@ pub fn key_released(event: &Event) -> Option<VirtualKeyCode> {
 #[derive(Default)]
 pub struct TwInputsHandler {
     pub stopwatch: Stopwatch,
+    pub double_click_stopwatch: Stopwatch,
     pub last_dropped_file_path: Option<String>,
     pub mouse_position: Option<(f32, f32)>,
     pub mouse_world_position: Option<(f32, f32)>,
     pub mouse_world_clicked_position: Option<(f32, f32)>,
     pub mouse_button_pressed: Option<MouseButton>,
+    pub mouse_double_clicked: Option<MouseButton>,
     pub mouse_position_history: Vec<(f32, f32)>,
     pub alt_mouse_button_pressed: Option<MouseButton>,
     pub ctrl_mouse_button_pressed: Option<MouseButton>,

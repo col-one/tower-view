@@ -80,6 +80,7 @@ impl<'a> SimpleState for Tower {
         // init twinputshandler
         let mut tw_inputs_handler = TwInputsHandler::default();
         tw_inputs_handler.stopwatch.start();
+        tw_inputs_handler.double_click_stopwatch.start();
         tw_inputs_handler.window_zoom_factor = 1.0;
         world.insert(tw_inputs_handler);
         camera::initialise_camera(world);
@@ -146,6 +147,10 @@ impl<'a> SimpleState for Tower {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.mouse_button_pressed = Some(button);
                     tw_in.mouse_world_clicked_position = tw_in.mouse_world_position;
+                    if Duration::from_millis(300) >= tw_in.double_click_stopwatch.elapsed() {
+                        tw_in.mouse_double_clicked = Some(button);
+                    }
+                    tw_in.double_click_stopwatch.restart();
                 }
             }
             // mouse released event
@@ -156,6 +161,7 @@ impl<'a> SimpleState for Tower {
                     tw_in.alt_mouse_button_pressed = None;
                     tw_in.ctrl_mouse_button_pressed = None;
                     tw_in.mouse_world_clicked_position = None;
+                    tw_in.mouse_double_clicked = None;
                 }
             }
             // keyboard pressed

@@ -123,7 +123,7 @@ impl<'s> System<'s> for CameraCenterSystem {
         mut window,
     ): Self::SystemData) {
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
-            if let Some(button) = tw_in.mouse_button_pressed {
+            if let Some(button) = tw_in.mouse_double_clicked {
                 if !self.released && tw_in.keys_pressed.len() == 0 {
                     window.set_cursor_position(LogicalPosition::new((window.get_inner_size().unwrap().width * 0.5) as f64,
                                                                     (window.get_inner_size().unwrap().height * 0.5) as f64));
