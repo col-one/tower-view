@@ -102,8 +102,7 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
                     return
                 }
                 let dist = tw_in.get_mouse_delta_distance();
-                info!("{:?}", transform.translation().z);
-                transform.prepend_translation_z(dist.1 * 0.9);
+                transform.prepend_translation_z(dist.1 * 1.2);
 //                tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
@@ -164,6 +163,14 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
         tw_data
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.len() == 1 {
+            if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
+                let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
+                transform.set_translation_x((tw_data.active_rect.min.x + tw_data.active_rect.max.x) / 2.0);
+                transform.set_translation_y((tw_data.active_rect.min.y + tw_data.active_rect.max.y) / 2.0);
+                transform.set_translation_z(max(tw_data.active_rect.height() as i32, tw_data.active_rect.width() as i32) as f32);
+            }
+        }
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
                 transform.set_translation_x(tw_data.scene_middle_point.x);

@@ -15,7 +15,7 @@ use geo::algorithm::bounding_rect::BoundingRect;
 use std::time::Duration;
 
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
-use crate::image::TwImage;
+use crate::image::{TwImage, TwActiveComponent};
 
 
 #[derive(SystemDesc, Default)]
@@ -30,7 +30,8 @@ impl<'s> System<'s> for SceneBoundingBox {
                        ReadStorage<'s, TwImage>,
                        Read<'s, AssetStorage<SpriteSheet>>,
                        ReadStorage<'s, SpriteRender>,
-                       ReadStorage<'s, Camera>);
+                       ReadStorage<'s, Camera>,
+                       ReadStorage<'s, TwActiveComponent>);
 
     fn run(&mut self, (
         mut tw_data,
@@ -38,10 +39,12 @@ impl<'s> System<'s> for SceneBoundingBox {
         twimages,
         sprite_sheet,
         sprites,
-        cameras
+        cameras,
+        actives
     ): Self::SystemData) {
         let count = (&twimages, &transforms).join().count();
         let mut points = Vec::new();
+        let mut active_points = Vec::new();
         for (sprite, twimage, transform) in (&sprites, &twimages, &transforms).join() {
             let sprite_sheet = sprite_sheet.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -49,8 +52,19 @@ impl<'s> System<'s> for SceneBoundingBox {
             points.push((transform.translation().x - (sprite.width * 0.5), transform.translation().y - (sprite.height * 0.5)));
             points.push((transform.translation().x + (sprite.width * 0.5), transform.translation().y + (sprite.height * 0.5)));
         }
-        let bbox = LineString::from(points).bounding_rect().unwrap();
-        tw_data.scene_middle_point = Point2::new((bbox.min.x + bbox.max.x) / 2.0, (bbox.min.y + bbox.max.y) / 2.0);
-        tw_data.scene_rect = bbox;
+        for (sprite, active, transform) in (&sprites, &actives, &transforms).join() {
+            let sprite_sheet = sprite_sheet.get(&sprite.sprite_sheet).unwrap();
+            let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+            active_points.push((transform.translation().x, transform.translation().y));
+            active_points.push((transform.translation().x - (sprite.width * 0.5), transform.translation().y - (sprite.height * 0.5)));
+            active_points.push((transform.translation().x + (sprite.width * 0.5), transform.translation().y + (sprite.height * 0.5)));
+        }
+        if let Some(bbox) = LineString::from(points).bounding_rect() {
+            tw_data.scene_middle_point = Point2::new((bbox.min.x + bbox.max.x) / 2.0, (bbox.min.y + bbox.max.y) / 2.0);
+            tw_data.scene_rect = bbox;
+        }
+        if let Some(bbox_active) = LineString::from(active_points).bounding_rect() {
+            tw_data.active_rect = bbox_active;
+        }
     }
 }

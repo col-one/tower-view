@@ -41,6 +41,7 @@ pub const MAXHEIGHT: f32 = 70000.0;
 pub struct TowerData {
     pub twimage_count: f32,
     pub scene_rect: Rect<f32>,
+    pub active_rect: Rect<f32>,
     pub scene_middle_point: Point2<f32>,
     pub cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
     pub working_dir: OsString,
@@ -53,6 +54,7 @@ impl Default for TowerData {
         Self {
             twimage_count: 0.0,
             scene_rect: Rect::new((0.0, 0.0), (0.0, 0.0)),
+            active_rect: Rect::new((0.0, 0.0), (0.0, 0.0)),
             cache: Arc::new(Mutex::new(HashMap::new())),
             working_dir: OsStr::new(".").to_owned(),
             file_to_cache: Vec::new(),
