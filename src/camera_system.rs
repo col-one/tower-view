@@ -7,7 +7,7 @@ use amethyst::{
     ecs::{Join, Read, System, SystemData, World, WriteStorage},
     ecs::prelude::*,
     renderer::rendy::wsi::winit::{MouseButton, Window, dpi::LogicalPosition},
-    renderer::camera::{ActiveCamera, Camera, Projection},
+    renderer::camera::{ActiveCamera, Camera, Projection, Perspective},
 };
 use geo::Rect;
 
@@ -15,7 +15,9 @@ use std::time::Duration;
 
 use crate::camera::TwCamera;
 use crate::inputshandler::{TwInputsHandler};
-use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData, MAXHEIGHT};
+use std::ops::Deref;
+use std::cmp::max;
 
 
 #[derive(SystemDesc, Default)]
@@ -61,15 +63,17 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
         tw_in
     ): Self::SystemData) {
         let window_size = window.get_inner_size().unwrap();
-        let camera = (&mut camera).join().next().unwrap();
-        let proj = Projection::orthographic(
-            -window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
-            window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
-            -window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
-            window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
-            0.1,
-            6000.0,
-        );
+        let mut camera = (&mut camera).join().next().unwrap();
+        let persp = Perspective::new((window_size.width / window_size.height) as f32, std::f32::consts::FRAC_PI_3, 0.01, 6000.0);
+        let proj = Projection::Perspective(persp);
+//        let proj = Projection::orthographic(
+//            -window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
+//            window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
+//            -window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
+//            window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
+//            0.1,
+//            6000.0,
+//        );
         camera.set_projection(proj);
     }
 }
@@ -98,7 +102,9 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
                     return
                 }
                 let dist = tw_in.get_mouse_delta_distance();
-                tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
+                info!("{:?}", transform.translation().z);
+                transform.prepend_translation_z(dist.1 * 0.9);
+//                tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
@@ -157,13 +163,12 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
         mut transforms,
         tw_data
     ): Self::SystemData) {
-        info!("{:?}", tw_data.scene_rect.height());
         if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.len() == 1 {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
                 transform.set_translation_x(tw_data.scene_middle_point.x);
                 transform.set_translation_y(tw_data.scene_middle_point.y);
-                tw_in.window_zoom_factor = 1.0;
+                transform.set_translation_z(max(tw_data.scene_rect.height() as i32, tw_data.scene_rect.width() as i32) as f32);
             }
         }
     }

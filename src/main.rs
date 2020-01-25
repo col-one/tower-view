@@ -75,12 +75,15 @@ fn main() -> amethyst::Result<()> {
                              .with_clear(BACKGROUNDCOLOR),)
             .with_plugin(RenderImgui::<StringBindings>::default())
             .with_plugin(RenderFlat2D::default()))?
-        .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &["input_system"])
+        // Active image system
         .with(TwImageActiveSystem, "image_active_system", &["input_system"])
+        // Camera system
+        .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &["input_system"])
         .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system", "image_active_system"])
         .with(CameraZoomNavigationSystem::default(), "camera_zoom_system", &["input_system", "image_active_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system", "image_active_system"])
         .with(CameraCenterSystem::default(), "camera_center_system", &["input_system", "image_active_system"])
+        // Image system
         .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
         .with(SceneBoundingBox::default(), "scene_bounding_system", &["input_system", "image_active_system"])
