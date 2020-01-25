@@ -281,7 +281,7 @@ impl<'s> System<'s> for TwImageNextSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
                        Entities<'s>,
-                       Read<'s, TowerData>,
+                       ReadExpect<'s, TowerData>,
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
         mut tw_in,
@@ -291,27 +291,29 @@ impl<'s> System<'s> for TwImageNextSystem {
         world,
     ): Self::SystemData) {
         if let Some((tw_image, entity)) = (&mut tw_images, &*entities).join().last() {
-            let mut index = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)).unwrap() as i16;
-            if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
-                if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
-                    index += 1;
-                    if index < tower_data.files_order.len() as i16 {
-                        let new_path = tower_data.files_order[index as usize].clone();
-                        info!("{:?}", new_path);
-                        world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+            if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
+                let mut index = index.clone() as i16;
+                if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
+                    if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                        index += 1;
+                        if index < tower_data.files_order.len() as i16 {
+                            let new_path = tower_data.files_order[index as usize].clone();
+                            info!("{:?}", new_path);
+                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() })
+                        }
+                        tw_in.stopwatch.restart();
                     }
-                    tw_in.stopwatch.restart();
                 }
-            }
-            if tw_in.keys_pressed.contains(&VirtualKeyCode::Left) {
-                if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
-                    index -= 1;
-                    if index >= 0 {
-                        let new_path = tower_data.files_order[index as usize].clone();
-                        info!("{:?}", new_path);
-                        world.insert(entity, TwPlaceHolder{to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned()})
+                if tw_in.keys_pressed.contains(&VirtualKeyCode::Left) {
+                    if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                        index -= 1;
+                        if index >= 0 {
+                            let new_path = tower_data.files_order[index as usize].clone();
+                            info!("{:?}", new_path);
+                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() })
+                        }
+                        tw_in.stopwatch.restart();
                     }
-                    tw_in.stopwatch.restart();
                 }
             }
         }

@@ -29,6 +29,7 @@ use crate::tower::{TowerData, WINDOWHEIGHT, WINDOWWIDTH};
 use crate::inputshandler::TwInputsHandler;
 use crate::utils::is_valid_file;
 use crate::raycasting_system::screen_to_world;
+use std::ffi::OsString;
 
 
 fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
@@ -45,6 +46,7 @@ pub struct TwImageDroppedSystem;
 impl<'s> System<'s> for TwImageDroppedSystem {
     type SystemData = (WriteExpect<'s, TwInputsHandler>,
                        Write<'s, LazyUpdate>,
+                       WriteExpect<'s, TowerData>,
                        ReadExpect<'s, Loader>,
                        Read<'s, AssetStorage<Texture>>,
                        Read<'s, AssetStorage<SpriteSheet>>,
@@ -55,6 +57,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
     fn run(&mut self, (
         mut tw_in,
         mut world,
+        mut tw_data,
         loader,
         texture,
         sprite,
@@ -63,26 +66,36 @@ impl<'s> System<'s> for TwImageDroppedSystem {
         transforms,
         screen_dimensions
     ): Self::SystemData) {
-        if let Some(drop_file) = &tw_in.last_dropped_file_path {
-            if is_valid_file(Path::new(&drop_file)) {
+        let mut path_to_load = Vec::new();
+        if let Some(drop_file) = &tw_in.last_dropped_file_path { path_to_load.push(drop_file.clone()) }
+        if !tw_data.inputs_path.is_empty() {
+            while !tw_data.inputs_path.is_empty() {
+                if let Some(path) = tw_data.inputs_path.pop() {
+                    // transfer to cache list for next key
+                    tw_data.file_to_cache.push(OsString::from(&path));
+                    path_to_load.push(path);
+                }
+            }
+        }
+        for path in path_to_load {
+            if is_valid_file(Path::new(&path)) {
                 let (camera, transform) = (&cameras, &transforms).join().next().unwrap();
+                let mut position = Transform::default();
                 if let Some(mouse_position) = tw_in.mouse_position {
                     let world_position = screen_to_world((mouse_position.0, mouse_position.1),
                                                          camera, transform, &screen_dimensions);
-                    let mut position = Transform::default();
                     position.set_translation_x(world_position.x);
                     position.set_translation_y(world_position.y);
                     position.set_translation_z(world_position.z);
-//                    let sprite = sprite_twplaceholder(&loader, &texture, &sprite);
-                    world.create_entity(&*entities)
-                        .with(position)
-//                        .with(sprite)
-                        .with(TwPlaceHolder { twimage_path: drop_file.clone(), to_cache: true })
-                        .build();
-                    tw_in.last_dropped_file_path = None;
                 }
+                world.create_entity(&*entities)
+                    .with(position)
+//                        .with(sprite)
+                    .with(TwPlaceHolder { twimage_path: path.clone(), to_cache: true })
+                    .build();
+                tw_in.last_dropped_file_path = None;
             } else {
-                warn!("Invalid format for {:?}", &drop_file);
+                warn!("Invalid format for {:?}", &path);
             }
         }
     }

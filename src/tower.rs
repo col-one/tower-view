@@ -6,7 +6,7 @@ use amethyst::{
     core::{Stopwatch, transform::Transform, math::Point2},
     winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
     renderer::types::TextureData,
-    renderer::{ActiveCamera},
+    renderer::{ActiveCamera, Camera},
     window::ScreenDimensions,
 };
 use geo::{Rect, Coordinate};
@@ -47,6 +47,7 @@ pub struct TowerData {
     pub working_dir: OsString,
     pub file_to_cache: Vec<OsString>,
     pub files_order: Vec<OsString>,
+    pub inputs_path: Vec<String>,
 }
 
 impl Default for TowerData {
@@ -59,7 +60,8 @@ impl Default for TowerData {
             working_dir: OsStr::new(".").to_owned(),
             file_to_cache: Vec::new(),
             files_order: Vec::new(),
-            scene_middle_point: Point2::new(0.0, 0.0)
+            scene_middle_point: Point2::new(0.0, 0.0),
+            inputs_path: Vec::new()
         }
     }
 }
@@ -70,17 +72,19 @@ pub struct Tower;
 impl<'a> SimpleState for Tower {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let mut world = data.world;
+        // init camera
+        camera::initialise_camera(world);
         // command line arguments
         let opt = Opt::from_args();
-        world.insert(opt);
-        // load image from inputs arg
-        image::load_image_from_inputs_arg(world);
         // init tower data
         let mut tower_data = TowerData::default();
         // get file to cache
-        tower_data.file_to_cache = list_valid_files(&world.fetch::<TowerData>().working_dir);
+        tower_data.inputs_path = opt.inputs.iter().map(|input| input.to_owned()).collect::<Vec<_>>();
+        if let Some(last_input_path) = tower_data.inputs_path.last() {
+            tower_data.working_dir = Path::new(last_input_path).parent().unwrap().as_os_str().to_owned();
+        }
+        tower_data.file_to_cache = list_valid_files(&tower_data.working_dir);
         tower_data.files_order = tower_data.file_to_cache.clone();
-        info!("{:?}", tower_data.file_to_cache);
         world.insert(tower_data);
         // init twinputshandler
         let mut tw_inputs_handler = TwInputsHandler::default();
@@ -88,7 +92,6 @@ impl<'a> SimpleState for Tower {
         tw_inputs_handler.double_click_stopwatch.start();
         tw_inputs_handler.window_zoom_factor = 1.0;
         world.insert(tw_inputs_handler);
-        camera::initialise_camera(world);
     }
 
     fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent,
