@@ -143,7 +143,11 @@ impl<'s> System<'s> for TwPlaceHolderCacheSystem {
         if !td.file_to_cache.is_empty() {
             let path = td.file_to_cache.pop().unwrap();
             let cache = Arc::clone(&td.cache);
-            thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
+            if !cache.lock().unwrap().contains_key(path.to_str().unwrap()) {
+                thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
+            } else {
+                info!("Image already in cache {:?}", path);
+            }
         }
     }
 }

@@ -281,25 +281,27 @@ impl<'s> System<'s> for TwImageNextSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
                        Entities<'s>,
-                       ReadExpect<'s, TowerData>,
+                       WriteExpect<'s, TowerData>,
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
         mut tw_in,
         mut tw_images,
         mut entities,
-        tower_data,
+        mut tower_data,
         world,
     ): Self::SystemData) {
         if let Some((tw_image, entity)) = (&mut tw_images, &*entities).join().last() {
             if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
                 let mut index = index.clone() as i16;
+                let mut new_path = OsString::new();
                 if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
                     if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
                         index += 1;
                         if index < tower_data.files_order.len() as i16 {
-                            let new_path = tower_data.files_order[index as usize].clone();
+                            new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() })
+                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            tower_data.file_to_cache.push(new_path);
                         }
                         tw_in.stopwatch.restart();
                     }
@@ -308,9 +310,10 @@ impl<'s> System<'s> for TwImageNextSystem {
                     if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
                         index -= 1;
                         if index >= 0 {
-                            let new_path = tower_data.files_order[index as usize].clone();
+                            new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() })
+                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            tower_data.file_to_cache.push(new_path);
                         }
                         tw_in.stopwatch.restart();
                     }
