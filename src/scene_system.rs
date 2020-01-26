@@ -15,7 +15,7 @@ use geo::algorithm::bounding_rect::BoundingRect;
 use std::time::Duration;
 
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
-use crate::image::{TwImage, TwActiveComponent};
+use crate::image::{TwImage, TwActiveUiComponent};
 
 
 #[derive(SystemDesc, Default)]
@@ -31,7 +31,7 @@ impl<'s> System<'s> for SceneBoundingBox {
                        Read<'s, AssetStorage<SpriteSheet>>,
                        ReadStorage<'s, SpriteRender>,
                        ReadStorage<'s, Camera>,
-                       ReadStorage<'s, TwActiveComponent>);
+                       ReadStorage<'s, TwActiveUiComponent>);
 
     fn run(&mut self, (
         mut tw_data,

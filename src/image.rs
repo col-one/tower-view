@@ -39,6 +39,13 @@ impl  InputComponent {
 }
 
 
+// active ui component
+pub struct TwActiveUiComponent;
+
+impl Component for TwActiveUiComponent {
+    type Storage = VecStorage<Self>;
+}
+
 // active component
 pub struct TwActiveComponent;
 

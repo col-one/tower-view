@@ -17,7 +17,7 @@ use amethyst::input::is_mouse_button_down;
 use uuid::Uuid;
 use std::{thread, time};
 
-use crate::image::{TwImage, TwActiveComponent};
+use crate::image::{TwImage, TwActiveUiComponent};
 use crate::inputshandler::{TwInputsHandler};
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::placeholder::TwPlaceHolder;
@@ -43,6 +43,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
             tw_in,
         ): Self::SystemData) {
         for (transform, tw_image) in (&mut transforms, &mut tw_images).join() {
+            if !tw_in.twimages_under_mouse.is_empty() {info!("{:?} {:?}", tw_in.twimages_under_mouse[0].0, tw_image.id)};
             if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
                 if let Some(button) = &tw_in.alt_mouse_button_pressed {
                     if let Some(world_pos) = &tw_in.mouse_world_position {
@@ -210,7 +211,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
         mut tw_images,
         mut tw_places,
         mut transforms,
-        mut td,
+        mut tw_data,
         entities,
         mut asset_texture,
         asset_sprite,
@@ -218,7 +219,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
         mut world
     ): Self::SystemData) {
         for (tw_place, transform, entity) in (&mut tw_places, &mut transforms, &*entities).join() {
-            let arc_cache = Arc::clone(&td.cache);
+            let arc_cache = Arc::clone(&tw_data.cache);
             let cache_res = match arc_cache.try_lock() {
                 Ok(cache) => Some(cache),
                 Err(e) => None
@@ -248,26 +249,27 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                         &asset_sprite,
                     );
                     let mut transform = transform.clone();
-                    transform.set_translation_z(td.twimage_count);
+                    transform.set_translation_z(tw_data.twimage_count);
                     let sprite_render = SpriteRender {
                         sprite_sheet: sprite_handle.clone(),
                         sprite_number: 0,
                     };
                     let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
-                    let tw_image_path = tw_image.file_name.clone();
-                    let tw_image = tw_image.clone();
                     world.create_entity(&*entities)
                         .with(transform)
                         .with(sprite_render)
-                        .with(tw_image)
+                        .with(tw_image.clone())
                         .with(Transparent)
                         .with(tint)
                         .build();
-                    td.twimage_count = td.twimage_count + 1.0;
+                    if !tw_place.from_next {
+                        tw_data.twimage_count = tw_data.twimage_count + 1.0;
+                    }
                     // delete placeholder
                     entities.delete(entity);
                     // set working dir
-                    td.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
+                    let tw_image_path = tw_image.file_name.clone();
+                    tw_data.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
                 }
             }
         }
@@ -300,7 +302,7 @@ impl<'s> System<'s> for TwImageNextSystem {
                         if index < tower_data.files_order.len() as i16 {
                             new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            world.insert(entity, TwPlaceHolder {from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }
                         tw_in.stopwatch.restart();
@@ -312,7 +314,7 @@ impl<'s> System<'s> for TwImageNextSystem {
                         if index >= 0 {
                             new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder { to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            world.insert(entity, TwPlaceHolder {from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }
                         tw_in.stopwatch.restart();

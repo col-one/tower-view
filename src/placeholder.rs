@@ -23,6 +23,7 @@ use std::path::PathBuf;
 pub struct TwPlaceHolder {
     pub twimage_path: String,
     pub to_cache: bool,
+    pub from_next: bool,
 }
 
 impl Component for TwPlaceHolder {
@@ -74,6 +75,6 @@ pub fn create_entity_twplaceholder(world: &mut World, twimage_path: String, posi
     world.create_entity()
         .with(position)
         .with(sprite_render)
-        .with(TwPlaceHolder{twimage_path, to_cache: true})
+        .with(TwPlaceHolder{from_next: false, twimage_path, to_cache: true})
         .build();
 }

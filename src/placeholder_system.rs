@@ -91,7 +91,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                 world.create_entity(&*entities)
                     .with(position)
 //                        .with(sprite)
-                    .with(TwPlaceHolder { twimage_path: path.clone(), to_cache: true })
+                    .with(TwPlaceHolder {from_next: false, twimage_path: path.clone(), to_cache: true })
                     .build();
                 tw_in.last_dropped_file_path = None;
             } else {

@@ -6,7 +6,7 @@ use amethyst_imgui::{
 	RenderImgui,
 };
 use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings};
-use crate::image::{TwActiveComponent, TwImage};
+use crate::image::{TwActiveUiComponent, TwImage};
 
 
 pub const UI_WIDTH: f32 = 300.0;
@@ -18,7 +18,7 @@ pub struct SliderAlphaSystem {
 
 impl<'s> amethyst::ecs::System<'s> for SliderAlphaSystem {
 	type SystemData = (Read<'s, InputHandler<StringBindings>>,
-	                   ReadStorage<'s, TwActiveComponent>,
+	                   ReadStorage<'s, TwActiveUiComponent>,
 					   WriteStorage<'s, TwImage>);
 	fn run(&mut self, (
 			input,
@@ -56,7 +56,7 @@ pub struct SliderRedSystem {
 
 impl<'s> amethyst::ecs::System<'s> for SliderRedSystem {
 	type SystemData = (Read<'s, InputHandler<StringBindings>>,
-	                   ReadStorage<'s, TwActiveComponent>,
+	                   ReadStorage<'s, TwActiveUiComponent>,
 					   WriteStorage<'s, TwImage>);
 	fn run(&mut self, (
 			input,
