@@ -76,7 +76,7 @@ fn main() -> amethyst::Result<()> {
             .with_plugin(RenderImgui::<StringBindings>::default())
             .with_plugin(RenderFlat2D::default()))?
         // Active image system
-        .with(TwImageActiveSystem, "image_active_system", &["input_system"])
+        .with(TwImageActiveSystem::default(), "image_active_system", &["input_system"])
         // Camera system
         .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &["input_system"])
         .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system", "image_active_system"])
@@ -89,7 +89,7 @@ fn main() -> amethyst::Result<()> {
         .with(SceneBoundingBox::default(), "scene_bounding_system", &["input_system", "image_active_system"])
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["input_system", "image_active_system"])
-        .with(TwImageMoveSystem, "image_move_system", &["input_system", "image_active_system"])
+        .with(TwImageMoveSystem::default(), "image_move_system", &["input_system", "image_active_system"])
         .with(SliderRedSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
         .with(TwPlaceHolderLoadTwImageSystem, "place_holder_system", &["input_system"])
         .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["input_system", "place_holder_system"])

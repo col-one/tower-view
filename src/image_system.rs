@@ -17,7 +17,7 @@ use amethyst::input::is_mouse_button_down;
 use uuid::Uuid;
 use std::{thread, time};
 
-use crate::image::{TwImage, TwActiveUiComponent};
+use crate::image::{TwImage, TwActiveUiComponent, TwActiveComponent};
 use crate::inputshandler::{TwInputsHandler};
 use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::placeholder::TwPlaceHolder;
@@ -30,38 +30,41 @@ use std::ffi::OsString;
 use crate::raycasting_system::screen_to_world;
 
 
-#[derive(SystemDesc)]
-pub struct TwImageMoveSystem;
+#[derive(SystemDesc, Default)]
+pub struct TwImageMoveSystem {
+    click_offset: Option<(f32, f32)>
+}
 
 impl<'s> System<'s> for TwImageMoveSystem {
     type SystemData = (WriteStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
-                       Read<'s, TwInputsHandler>);
+                       WriteExpect<'s, TwInputsHandler>,
+                       ReadStorage<'s, TwActiveComponent>);
     fn run(&mut self, (
             mut tw_images,
             mut transforms,
-            tw_in,
+            mut tw_in,
+            tw_actives,
         ): Self::SystemData) {
-        for (transform, tw_image) in (&mut transforms, &mut tw_images).join() {
-            if !tw_in.twimages_under_mouse.is_empty() {info!("{:?} {:?}", tw_in.twimages_under_mouse[0].0, tw_image.id)};
-            if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
-                if let Some(button) = &tw_in.alt_mouse_button_pressed {
-                    if let Some(world_pos) = &tw_in.mouse_world_position {
-                        if tw_image.mouse_offset.is_none() {
-                            let offset = (transform.translation().x - world_pos.0, transform.translation().y - world_pos.1);
-                            tw_image.mouse_offset = Some(offset);
-                        }
-                        if let Some(offset) = tw_image.mouse_offset {
-                            transform.set_translation_x(world_pos.0 + offset.0);
-                            transform.set_translation_y(world_pos.1 + offset.1);
-                        }
+        if let Some(button) = &tw_in.alt_mouse_button_pressed {
+            tw_in.active_busy = true;
+            if let Some(top_active_entity) = tw_in.active_entities.last() {
+                if let Some(world_pos) = &tw_in.mouse_world_position {
+                    if self.click_offset.is_none() {
+                        let offset = (transforms.get(*top_active_entity).unwrap().translation().x - world_pos.0,
+                                      transforms.get(*top_active_entity).unwrap().translation().y - world_pos.1);
+                        self.click_offset = Some(offset);
                     }
-                } else {
-                    tw_image.mouse_offset = None
+                    if let Some(offset) = self.click_offset {
+                        let mut trans = transforms.get_mut(*top_active_entity).unwrap();
+                        trans.set_translation_x(world_pos.0 + offset.0);
+                        trans.set_translation_y(world_pos.1 + offset.1);
+                    }
                 }
-            } else {
-                tw_image.mouse_offset = None
             }
+        } else {
+            self.click_offset = None;
+            tw_in.active_busy = false;
         }
     }
 }
@@ -111,24 +114,20 @@ impl<'s> System<'s> for TwImageLayoutSystem {
 pub struct TwImageDeleteSystem;
 
 impl<'s> System<'s> for TwImageDeleteSystem {
-    type SystemData = (Write<'s, TwInputsHandler>,
-                       ReadStorage<'s, TwImage>,
+    type SystemData = (WriteExpect<'s, TwInputsHandler>,
                        Entities<'s>);
     fn run(&mut self, (
         mut tw_in,
-        tw_images,
         entities
     ): Self::SystemData) {
-        for (tw_image, entity) in (&tw_images, &*entities).join() {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::Delete) && tw_in.keys_pressed.len() == 1 {
             if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
-                if tw_in.keys_pressed.contains(&VirtualKeyCode::Delete) && tw_in.keys_pressed.len() == 1 {
-                    if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
-                        info!("TwImage is deleting, {:?}", entity);
-                        let index = tw_in.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
-                        tw_in.twimages_under_mouse.remove(index);
-                        entities.delete(entity).unwrap();
-                        tw_in.stopwatch.restart();
-                    }
+                if let Some(active_entity) = tw_in.active_entities.last() {
+                    info!("TwImage is deleting, {:?}", active_entity);
+                    entities.delete(*active_entity).expect("Fail error to delete entity");
+                    // clean entities copies in tw_in
+                    tw_in.active_entities.clear();
+                    tw_in.stopwatch.restart();
                 }
             }
         }

@@ -56,8 +56,10 @@ impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
 }
 
 
-#[derive(SystemDesc)]
-pub struct TwImageActiveSystem;
+#[derive(SystemDesc, Default)]
+pub struct TwImageActiveSystem{
+    button_pressed: bool
+}
 
 impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
@@ -97,41 +99,30 @@ impl<'s> System<'s> for TwImageActiveSystem {
                     && mouse_world_position.1 > min_y
                     && mouse_world_position.1 < max_y
                 {
-                    if !tw_in.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
-                        tw_in.twimages_under_mouse.push((tw_image.id, transform.translation().z));
+                    // if active is busy (used by action) or actives empty
+                    if !tw_in.active_busy || tw_in.active_entities.is_empty() {
+                        tw_actives.insert(entity, TwActiveComponent).expect("Failed to add TwActiveComponent.");
+                        tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveComponent.");
+                        if tw_in.active_entities.len() >= 2 {
+                            tw_in.active_entities.remove(0);
+                            tw_in.active_entities.push(entity);
+                        } else {
+                            tw_in.active_entities.push(entity);
+                        }
                     }
                 } else {
-                    if tw_in.twimages_under_mouse.iter().any(|x| x.0 == tw_image.id) {
-                        let index = tw_in.twimages_under_mouse.iter().position(|x| x.0 == tw_image.id).unwrap();
-                        tw_in.twimages_under_mouse.remove(index);
+                    if let Some(ok) = tw_actives.remove(entity) { info!("remove active twimage") };
+                    if let Some(id) = tw_in.active_entities.iter().position(|i| i == &entity) {
+                        tw_in.active_entities.remove(id);
                     }
                 }
             }
-            // set as active image the highest image z order
-            tw_in.twimages_under_mouse.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Equal));
-            if tw_in.twimages_under_mouse.is_empty() {
-                tw_in.twimage_active = None;
-            } else {
-                if tw_in.twimages_under_mouse[0].0 == tw_image.id {
-                    if !tw_ui_actives.contains(entity) {
-                        // add active tw_image component
-                        tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveUiComponent.");
-                    }
-                } else {
-                    if tw_ui_actives.remove(entity).is_some() {
-                        tw_ui_actives.clear();
-                    }
-                }
-            }
-            tw_image.z_order = transform.translation().z;
         }
         // prepare remove active
         if tw_in.keys_pressed.contains(&VirtualKeyCode::Escape) && tw_in.keys_pressed.len() == 1  { remove_active = true }
         let mut entities_to_remove = Vec::new();
-        for (twactive, entity) in (&mut tw_ui_actives, &*entities).join() {
-            if tw_in.twimages_under_mouse.is_empty() {
-                entities_to_remove.push(entity);
-            }
+        for (tw_ui_active, entity) in (&mut tw_ui_actives, &*entities).join() {
+            entities_to_remove.push(entity);
         }
         if remove_active {
             for entity in entities_to_remove {
@@ -139,7 +130,15 @@ impl<'s> System<'s> for TwImageActiveSystem {
                 tw_ui_actives.remove(entity).expect("Failed to remove TwActiveUiComponent.");
             }
         }
+        // sort active by z if active is not busy, need new active order
+        if !tw_in.active_busy {
+            if tw_in.active_entities.len() >= 2 {
+                let t1 = transforms.get(tw_in.active_entities[0]).unwrap();
+                let t2 = transforms.get(tw_in.active_entities[1]).unwrap();
+                tw_in.active_entities.sort_by(|e1, e2|
+                    t1.translation().z.partial_cmp(&t2.translation().z).unwrap_or(Equal));
+            }
+        }
     }
 }
-
 

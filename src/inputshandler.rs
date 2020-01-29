@@ -1,7 +1,7 @@
 use amethyst::prelude::*;
 use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
 use amethyst::prelude::*;
-use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}};
+use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}, Transform};
 use amethyst::{
         winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition, ElementState, MouseButton,
                 KeyboardInput, WindowId, DeviceId, ModifiersState},
@@ -170,7 +170,9 @@ pub struct TwInputsHandler {
     pub last_key_released: Option<VirtualKeyCode>,
     pub twimages_under_mouse: Vec<(Uuid, f32)>,
     pub twimage_active: Option<Uuid>,
+    pub active_entities: Vec<Entity>,
     pub window_zoom_factor: f32,
+    pub active_busy: bool,
 }
 
 impl TwInputsHandler {
