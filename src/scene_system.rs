@@ -16,6 +16,7 @@ use std::time::Duration;
 
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 use crate::image::{TwImage, TwActiveUiComponent};
+use crate::inputshandler::TwInputsHandler;
 
 
 #[derive(SystemDesc, Default)]
@@ -31,7 +32,7 @@ impl<'s> System<'s> for SceneBoundingBox {
                        Read<'s, AssetStorage<SpriteSheet>>,
                        ReadStorage<'s, SpriteRender>,
                        ReadStorage<'s, Camera>,
-                       ReadStorage<'s, TwActiveUiComponent>);
+                       Read<'s, TwInputsHandler>);
 
     fn run(&mut self, (
         mut tw_data,
@@ -40,7 +41,7 @@ impl<'s> System<'s> for SceneBoundingBox {
         sprite_sheet,
         sprites,
         cameras,
-        actives
+        tw_in
     ): Self::SystemData) {
         let count = (&twimages, &transforms).join().count();
         let mut points = Vec::new();
@@ -52,7 +53,9 @@ impl<'s> System<'s> for SceneBoundingBox {
             points.push((transform.translation().x - (sprite.width * 0.5), transform.translation().y - (sprite.height * 0.5)));
             points.push((transform.translation().x + (sprite.width * 0.5), transform.translation().y + (sprite.height * 0.5)));
         }
-        for (sprite, active, transform) in (&sprites, &actives, &transforms).join() {
+        if let Some(active_entity) = tw_in.active_entities.last() {
+            let sprite = &sprites.get(*active_entity).unwrap();
+            let transform = &transforms.get(*active_entity).unwrap();
             let sprite_sheet = sprite_sheet.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
             active_points.push((transform.translation().x, transform.translation().y));

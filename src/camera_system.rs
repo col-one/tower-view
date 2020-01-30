@@ -66,14 +66,6 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
         let mut camera = (&mut camera).join().next().unwrap();
         let persp = Perspective::new((window_size.width / window_size.height) as f32, std::f32::consts::FRAC_PI_3, 0.01, 6000.0);
         let proj = Projection::Perspective(persp);
-//        let proj = Projection::orthographic(
-//            -window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
-//            window_size.width as f32 / (2.0 * tw_in.window_zoom_factor),
-//            -window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
-//            window_size.height as f32 / (2.0 * tw_in.window_zoom_factor),
-//            0.1,
-//            6000.0,
-//        );
         camera.set_projection(proj);
     }
 }

@@ -203,7 +203,8 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                        Write<'s, AssetStorage<Texture>>,
                        Read<'s, AssetStorage<SpriteSheet>>,
                        WriteExpect<'s, Loader>,
-                       Write<'s, LazyUpdate>);
+                       Write<'s, LazyUpdate>,
+                       WriteExpect<'s, TwInputsHandler>);
     fn run(&mut self, (
         mut tw_images,
         mut tw_places,
@@ -213,7 +214,8 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
         mut asset_texture,
         asset_sprite,
         mut loader,
-        mut world
+        mut world,
+        mut tw_in
     ): Self::SystemData) {
         for (tw_place, transform, entity) in (&mut tw_places, &mut transforms, &*entities).join() {
             let arc_cache = Arc::clone(&tw_data.cache);
@@ -264,6 +266,8 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                     }
                     // delete placeholder
                     entities.delete(entity);
+                    tw_in.z_ordered_entities.clear();
+                    tw_in.active_entities.clear();
                     // set working dir
                     let tw_image_path = tw_image.file_name.clone();
                     tw_data.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
@@ -278,46 +282,54 @@ pub struct TwImageNextSystem;
 
 impl<'s> System<'s> for TwImageNextSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
-                       WriteStorage<'s, TwImage>,
+                       ReadStorage<'s, TwImage>,
                        Entities<'s>,
                        WriteExpect<'s, TowerData>,
                        Write<'s, LazyUpdate>);
     fn run(&mut self, (
         mut tw_in,
-        mut tw_images,
+        tw_images,
         mut entities,
         mut tower_data,
         world,
     ): Self::SystemData) {
-        if let Some((tw_image, entity)) = (&mut tw_images, &*entities).join().last() {
-            if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
-                let mut index = index.clone() as i16;
-                let mut new_path = OsString::new();
-                if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
-                    if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::Right) && tw_in.keys_pressed.len() == 1 {
+            if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                if let Some(active_entity) = tw_in.active_entities.last() {
+                    let tw_image = tw_images.get(*active_entity).unwrap();
+                    if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
+                        let mut index = index.clone() as i16;
+                        let mut new_path = OsString::new();
                         index += 1;
                         if index < tower_data.files_order.len() as i16 {
                             new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder {from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }
-                        tw_in.stopwatch.restart();
                     }
                 }
-                if tw_in.keys_pressed.contains(&VirtualKeyCode::Left) {
-                    if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+            }
+            tw_in.stopwatch.restart();
+        }
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::Left) && tw_in.keys_pressed.len() == 1 {
+            if time::Duration::from_millis(200) <= tw_in.stopwatch.elapsed() {
+                if let Some(active_entity) = tw_in.active_entities.last() {
+                    let tw_image = tw_images.get(*active_entity).unwrap();
+                    if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
+                        let mut index = index.clone() as i16;
+                        let mut new_path = OsString::new();
                         index -= 1;
                         if index >= 0 {
                             new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
-                            world.insert(entity, TwPlaceHolder {from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
+                            world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }
-                        tw_in.stopwatch.restart();
                     }
                 }
             }
+            tw_in.stopwatch.restart();
         }
     }
 }
