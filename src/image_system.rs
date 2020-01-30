@@ -74,19 +74,19 @@ impl<'s> System<'s> for TwImageMoveSystem {
 pub struct TwImageLayoutSystem;
 
 impl<'s> System<'s> for TwImageLayoutSystem {
-    type SystemData = (Read<'s, InputHandler<StringBindings>>,
+    type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
                        ReadStorage<'s, SpriteRender>,
                        Read<'s, AssetStorage<SpriteSheet>>, );
     fn run(&mut self, (
-        input,
+        tw_in,
         tw_images,
         mut transforms,
         sprites,
         sprite_sheets
     ): Self::SystemData) {
-        if input.key_is_down(VirtualKeyCode::L) {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::L) && tw_in.keys_pressed.len() == 1 {
             let twimage_count = tw_images.count() as f32;
             let xy_limit = match twimage_count.sqrt() {
                 xy_limit if xy_limit < 2.0 => 2.0,
