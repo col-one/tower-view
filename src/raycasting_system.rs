@@ -133,10 +133,9 @@ impl<'s> System<'s> for TwImageActiveSystem {
         // sort active by z if active is not busy, need new active order
         if !tw_in.active_busy {
             if tw_in.active_entities.len() >= 2 {
-                let t1 = transforms.get(tw_in.active_entities[0]).unwrap();
-                let t2 = transforms.get(tw_in.active_entities[1]).unwrap();
                 tw_in.active_entities.sort_by(|e1, e2|
-                    t1.translation().z.partial_cmp(&t2.translation().z).unwrap_or(Equal));
+                    transforms.get(*e1).unwrap().translation().z.partial_cmp(
+                    &transforms.get(*e2).unwrap().translation().z).unwrap_or(Equal));
             }
         }
     }
