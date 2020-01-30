@@ -84,6 +84,10 @@ impl<'s> System<'s> for TwImageActiveSystem {
         for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
             let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+            let is_present = tw_in.z_ordered_entities.iter().any(|e| e == &entity);
+            if !is_present {
+                tw_in.z_ordered_entities.push(entity);
+            }
             let (min_x, max_x, min_y, max_y) = {
                 (
                     transform.translation().x - (sprite.width * 0.5),
@@ -138,6 +142,9 @@ impl<'s> System<'s> for TwImageActiveSystem {
                     &transforms.get(*e2).unwrap().translation().z).unwrap_or(Equal));
             }
         }
+        tw_in.z_ordered_entities.sort_by(|e1, e2|
+            transforms.get(*e1).unwrap().translation().z.partial_cmp(
+            &transforms.get(*e2).unwrap().translation().z).unwrap_or(Equal));
     }
 }
 

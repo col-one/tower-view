@@ -127,6 +127,7 @@ impl<'s> System<'s> for TwImageDeleteSystem {
                     entities.delete(*active_entity).expect("Fail error to delete entity");
                     // clean entities copies in tw_in
                     tw_in.active_entities.clear();
+                    tw_in.z_ordered_entities.clear();
                     tw_in.stopwatch.restart();
                 }
             }
@@ -135,39 +136,36 @@ impl<'s> System<'s> for TwImageDeleteSystem {
 }
 
 
-#[derive(SystemDesc)]
+#[derive(SystemDesc, Default)]
 pub struct TwImageToFrontSystem;
 
 impl<'s> System<'s> for TwImageToFrontSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
-                       ReadStorage<'s, TwImage>,
-                       WriteStorage<'s, Transform>);
+                       WriteStorage<'s, TwImage>,
+                       WriteStorage<'s, Transform>,
+                       Entities<'s>);
     fn run(&mut self, (
         mut tw_in,
-        tw_images,
+        mut tw_images,
         mut transforms,
+        entities,
     ): Self::SystemData) {
-        let mut images = {
-            let (img) = (&tw_images).join();
-            let mut images = img.map(|t| t).collect::<Vec<_>>();
-            images.sort_by(|a, b| a.z_order.partial_cmp(&b.z_order).unwrap_or(Equal));
-            images
-        };
-        for (tw_image, transform) in (&tw_images, &mut transforms).join() {
+        for (tw_image, transform, entity) in (&mut tw_images, &mut transforms, &*entities).join() {
             let mut current_index = tw_image.z_order as usize;
-            if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
+            if tw_in.keys_pressed.contains(&VirtualKeyCode::T) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
                 if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
-                    if !tw_in.twimages_under_mouse.is_empty() && tw_in.twimages_under_mouse[0].0 == tw_image.id {
-                        let i = images.iter().position(|x| x.id == tw_image.id).unwrap();
-                        let pop = images.swap_remove(i);
-                        images.push(pop);
-                        current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
-                        tw_in.stopwatch.restart();
+                    if let Some(active_entity) = tw_in.active_entities.last() {
+                        if *active_entity == entity {
+                            let i = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
+                            let pop = tw_in.z_ordered_entities.remove(i);
+                            tw_in.z_ordered_entities.push(pop);
+                            tw_in.stopwatch.restart();
+                        }
                     }
                 }
             }
-            current_index = images.iter().position(|x| x.id == tw_image.id).unwrap();
-            transform.set_translation_z(current_index as f32);
+            current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
+            transform.set_translation_z(current_index as f32 * 0.001);
         }
     }
 }

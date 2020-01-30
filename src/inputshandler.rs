@@ -171,6 +171,7 @@ pub struct TwInputsHandler {
     pub twimages_under_mouse: Vec<(Uuid, f32)>,
     pub twimage_active: Option<Uuid>,
     pub active_entities: Vec<Entity>,
+    pub z_ordered_entities: Vec<Entity>,
     pub window_zoom_factor: f32,
     pub active_busy: bool,
 }
