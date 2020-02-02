@@ -84,7 +84,7 @@ fn main() -> amethyst::Result<()> {
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system", "image_active_system"])
         .with(CameraCenterSystem::default(), "camera_center_system", &["input_system", "image_active_system"])
         // Image system
-        .with(TwImageLayoutSystem, "image_layout_system", &["input_system"])
+        .with(TwImageLayoutSystem::default(), "image_layout_system", &["image_active_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
         .with(SceneBoundingBox::default(), "scene_bounding_system", &["input_system", "image_active_system"])
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])

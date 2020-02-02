@@ -70,7 +70,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
 }
 
 
-#[derive(SystemDesc)]
+#[derive(SystemDesc, Default)]
 pub struct TwImageLayoutSystem;
 
 impl<'s> System<'s> for TwImageLayoutSystem {
@@ -78,30 +78,48 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                        ReadStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
                        ReadStorage<'s, SpriteRender>,
-                       Read<'s, AssetStorage<SpriteSheet>>, );
+                       Read<'s, AssetStorage<SpriteSheet>>,
+                       Entities<'s>);
     fn run(&mut self, (
         tw_in,
         tw_images,
         mut transforms,
         sprites,
-        sprite_sheets
+        sprite_sheets,
+        entities
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::L) && tw_in.keys_pressed.len() == 1 {
             let twimage_count = tw_images.count() as f32;
-            let xy_limit = match twimage_count.sqrt() {
+            let xy_limit = match twimage_count.sqrt().ceil() {
                 xy_limit if xy_limit < 2.0 => 2.0,
-                _ => twimage_count.sqrt()
+                _ => twimage_count.sqrt().ceil()
             };
+            let mut comp_iter = (&tw_images, &mut transforms, &sprites, &*entities).join();
+            let mut sprite_heights = Vec::new();
+            let mut sprite_widths = Vec::new();
+            let mut join_entities = Vec::new();
+            // get max width and height
+            for j in 0..twimage_count as usize {
+                let (tw_image, transform, sprite, entity) = comp_iter.next().unwrap();
+                join_entities.push(entity);
+                let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
+                let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                sprite_heights.push(sprite.height);
+                sprite_widths.push(sprite.width);
+            }
+            sprite_heights.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
+            sprite_widths.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
+
             let offset = 10.0;
             let mut i = 0;
+            info!("{:?}", xy_limit);
             'out: for x in 0..xy_limit as usize {
                     for y in 0..xy_limit as usize {
-                        if i >= twimage_count as usize { break 'out }
-                        let (tw_image, transform, sprite) = (&tw_images, &mut transforms, &sprites).join().nth(i).unwrap();
-                        let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
-                        let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-                        transform.set_translation_x((sprite.width + offset) * x as f32);
-                        transform.set_translation_y((sprite.height + offset) * y as f32);
+                        if i >= twimage_count as usize { continue }
+                        let e = join_entities[i];
+                        let transform = transforms.get_mut(e).unwrap();
+                        transform.set_translation_x((sprite_widths.last().unwrap() + offset) * x as f32);
+                        transform.set_translation_y((sprite_heights.last().unwrap() + offset) * y as f32);
                         i += 1;
                 }
             }
@@ -163,9 +181,9 @@ impl<'s> System<'s> for TwImageToFrontSystem {
                         }
                     }
                 }
+                current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
+                transform.set_translation_z(current_index as f32 * 0.001);
             }
-            current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
-            transform.set_translation_z(current_index as f32 * 0.001);
         }
     }
 }
