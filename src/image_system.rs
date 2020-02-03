@@ -112,15 +112,14 @@ impl<'s> System<'s> for TwImageLayoutSystem {
 
             let offset = 10.0;
             let mut i = 0;
-            info!("{:?}", xy_limit);
-            'out: for x in 0..xy_limit as usize {
-                    for y in 0..xy_limit as usize {
-                        if i >= twimage_count as usize { continue }
-                        let e = join_entities[i];
-                        let transform = transforms.get_mut(e).unwrap();
-                        transform.set_translation_x((sprite_widths.last().unwrap() + offset) * x as f32);
-                        transform.set_translation_y((sprite_heights.last().unwrap() + offset) * y as f32);
-                        i += 1;
+            for x in 0..xy_limit as usize {
+                for y in 0..xy_limit as usize {
+                    if i >= twimage_count as usize { continue }
+                    let e = join_entities[i];
+                    let transform = transforms.get_mut(e).unwrap();
+                    transform.set_translation_x((sprite_widths.last().unwrap() + offset) * x as f32);
+                    transform.set_translation_y((sprite_heights.last().unwrap() + offset) * y as f32);
+                    i += 1;
                 }
             }
         }

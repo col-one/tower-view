@@ -100,8 +100,9 @@ impl<'a> SimpleState for Tower {
             // drop file event
             if let Some(drop_file) = get_drop_file(&event) {
                 {
+                    info!("{:?}", drop_file);
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
-                    tw_in.last_dropped_file_path = Some(drop_file);
+                    tw_in.last_dropped_file_path.push(drop_file);
                 }
             }
             // mouse move event

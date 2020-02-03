@@ -67,7 +67,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
         screen_dimensions
     ): Self::SystemData) {
         let mut path_to_load = Vec::new();
-        if let Some(drop_file) = &tw_in.last_dropped_file_path { path_to_load.push(drop_file.clone()) }
+        if let Some(drop_file) = &tw_in.last_dropped_file_path.pop() { path_to_load.push(drop_file.clone()) }
         if !tw_data.inputs_path.is_empty() {
             while !tw_data.inputs_path.is_empty() {
                 if let Some(path) = tw_data.inputs_path.pop() {
@@ -93,7 +93,6 @@ impl<'s> System<'s> for TwImageDroppedSystem {
 //                        .with(sprite)
                     .with(TwPlaceHolder {from_next: false, twimage_path: path.clone(), to_cache: true })
                     .build();
-                tw_in.last_dropped_file_path = None;
             } else {
                 warn!("Invalid format for {:?}", &path);
             }
