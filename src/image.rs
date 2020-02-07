@@ -199,7 +199,7 @@ pub fn load_image_from_inputs_arg(world: &mut World) {
         let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
         tw_image.z_order = z_count;
         create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-        z_count += 1.0;
+        z_count += 0.001;
     }
         let mut td = world.fetch_mut::<TowerData>();
         td.twimage_count = z_count;
@@ -215,7 +215,7 @@ pub fn load_image_from_path(world: &mut World, path: &str) {
     let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
     tw_image.z_order = z_count;
     create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-    z_count += 1.0;
+    z_count += 0.001;
     let mut td = world.fetch_mut::<TowerData>();
     td.twimage_count = z_count;
 }

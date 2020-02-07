@@ -132,9 +132,11 @@ pub struct TwImageDeleteSystem;
 
 impl<'s> System<'s> for TwImageDeleteSystem {
     type SystemData = (WriteExpect<'s, TwInputsHandler>,
+                       WriteExpect<'s, TowerData>,
                        Entities<'s>);
     fn run(&mut self, (
         mut tw_in,
+        mut tw_data,
         entities
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::Delete) && tw_in.keys_pressed.len() == 1 {
@@ -142,10 +144,11 @@ impl<'s> System<'s> for TwImageDeleteSystem {
                 if let Some(active_entity) = tw_in.active_entities.last() {
                     info!("TwImage is deleting, {:?}", active_entity);
                     entities.delete(*active_entity).expect("Fail error to delete entity");
-                    // clean entities copies in tw_in
+                    // clean entities copies in tw_in and tw_data
                     tw_in.active_entities.clear();
                     tw_in.z_ordered_entities.clear();
                     tw_in.stopwatch.restart();
+                    tw_data.twimage_count -= 1.0;
                 }
             }
         }
@@ -265,7 +268,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                         &asset_sprite,
                     );
                     let mut transform = transform.clone();
-                    transform.set_translation_z(tw_data.twimage_count);
+                    transform.set_translation_z(tw_data.twimage_count * 0.001);
                     let sprite_render = SpriteRender {
                         sprite_sheet: sprite_handle.clone(),
                         sprite_number: 0,

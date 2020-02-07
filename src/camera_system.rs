@@ -2,7 +2,7 @@ use amethyst::{
     prelude::*,
     window::ScreenDimensions,
     input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings},
-    core::{SystemDesc, Transform, math::{Vector3, Vector2}},
+    core::{SystemDesc, Transform, math::{Vector3, Vector2, Point2, Point3}},
     derive::SystemDesc,
     ecs::{Join, Read, System, SystemData, World, WriteStorage},
     ecs::prelude::*,
@@ -13,9 +13,9 @@ use geo::Rect;
 
 use std::time::Duration;
 
-use crate::camera::TwCamera;
+use crate::camera::{TwCamera, world_to_screen};
 use crate::inputshandler::{TwInputsHandler};
-use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData, MAXHEIGHT};
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData, MAXHEIGHT, MAGIC_NUMBER_Z};
 use std::ops::Deref;
 use std::cmp::max;
 
@@ -80,22 +80,19 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, Camera>,
                        WriteStorage<'s, Transform>,
-                       WriteExpect<'s, Window>,
                        );
     fn run(&mut self, (
         mut tw_in,
         tw_cameras,
         mut transforms,
-        mut window,
     ): Self::SystemData) {
-        for (_, transform) in (&tw_cameras, &mut transforms).join() {
+        for (cam, transform) in (&tw_cameras, &mut transforms).join() {
             if let Some(button) = tw_in.ctrl_mouse_button_pressed {
                 if self.locked_mouse == tw_in.mouse_position_history[1] {
                     return
                 }
                 let dist = tw_in.get_mouse_delta_distance();
                 transform.prepend_translation_z(dist.1 * 1.2);
-//                tw_in.window_zoom_factor = (tw_in.window_zoom_factor - (dist.1 * 0.01)).max(0.01);
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
@@ -152,7 +149,7 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
         mut tw_in,
         tw_cameras,
         mut transforms,
-        tw_data
+        tw_data,
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.len() == 1 {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
@@ -174,3 +171,27 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
 }
 
 
+#[derive(SystemDesc)]
+pub struct CameraOrignalScaleSystem;
+
+impl<'s> System<'s> for CameraOrignalScaleSystem {
+    type SystemData = (Write<'s, TwInputsHandler>,
+                       ReadStorage<'s, TwCamera>,
+                       WriteStorage<'s, Transform>,
+                       Read<'s, TowerData>);
+    fn run(&mut self, (
+        mut tw_in,
+        tw_cameras,
+        mut transforms,
+        tw_data,
+    ): Self::SystemData) {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::S) && tw_in.keys_pressed.len() == 1 {
+            if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
+                let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
+//                transform.set_translation_x((tw_data.active_rect.min.x + tw_data.active_rect.max.x) / 2.0);
+//                transform.set_translation_y((tw_data.active_rect.min.y + tw_data.active_rect.max.y) / 2.0);
+                transform.set_translation_z(MAGIC_NUMBER_Z);
+            }
+        }
+    }
+}

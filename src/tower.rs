@@ -3,10 +3,10 @@ use amethyst::{
     ecs::prelude::*,
     prelude::*,
     input::{InputHandler, StringBindings},
-    core::{Stopwatch, transform::Transform, math::Point2},
+    core::{Stopwatch, transform::Transform, math::{Point2, Vector3, Point3}},
     winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
     renderer::types::TextureData,
-    renderer::{ActiveCamera, Camera},
+    renderer::{ActiveCamera, Camera, debug_drawing::{DebugLines, DebugLinesComponent, DebugLinesParams}, palette::Srgba},
     window::ScreenDimensions,
 };
 use geo::{Rect, Coordinate};
@@ -32,10 +32,13 @@ use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
 
+
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+pub const BACKGROUNDCOLOR2: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
 pub const MAXHEIGHT: f32 = 70000.0;
+pub const MAGIC_NUMBER_Z: f32 = 886.81;
 
 
 pub struct TowerData {
@@ -48,6 +51,8 @@ pub struct TowerData {
     pub file_to_cache: Vec<OsString>,
     pub files_order: Vec<OsString>,
     pub inputs_path: Vec<String>,
+    pub debug_line_start: Point3<f32>,
+    pub debug_line_end: Point3<f32>,
 }
 
 impl Default for TowerData {
@@ -61,7 +66,9 @@ impl Default for TowerData {
             file_to_cache: Vec::new(),
             files_order: Vec::new(),
             scene_middle_point: Point2::new(0.0, 0.0),
-            inputs_path: Vec::new()
+            inputs_path: Vec::new(),
+            debug_line_start: Point3::new(0.0, 0.0, 0.0),
+            debug_line_end: Point3::new(0.0, 0.0, 0.0),
         }
     }
 }
@@ -92,6 +99,13 @@ impl<'a> SimpleState for Tower {
         tw_inputs_handler.double_click_stopwatch.start();
         tw_inputs_handler.window_zoom_factor = 1.0;
         world.insert(tw_inputs_handler);
+
+        // DEBUG
+        // Setup debug lines as a resource
+        world.insert(DebugLines::new());
+        // Configure width of lines. Optional step
+        world.insert(DebugLinesParams { line_width: 2.0 });
+        world.register::<DebugLinesComponent>();
     }
 
     fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent,

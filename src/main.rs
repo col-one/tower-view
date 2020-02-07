@@ -11,7 +11,8 @@ use amethyst::{
     ecs::prelude::{ReadExpect, SystemData},
     prelude::*,
     renderer::{
-        plugins::{RenderFlat2D, RenderToWindow},
+        palette,
+        plugins::{RenderFlat2D, RenderToWindow, RenderDebugLines, RenderSkybox},
         types::DefaultBackend,
         RenderingBundle,
     },
@@ -36,13 +37,13 @@ mod placeholder;
 mod placeholder_system;
 
 use crate::args_cli::Opt;
-use crate::tower::{Tower, BACKGROUNDCOLOR};
-use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem};
+use crate::tower::{Tower, BACKGROUNDCOLOR, BACKGROUNDCOLOR2};
+use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem, CameraOrignalScaleSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
                           TwImageNextSystem};
 use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
-use crate::scene_system::{SceneBoundingBox};
+use crate::scene_system::{SceneBoundingBox, DebugLinesSystem};
 use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
 
@@ -68,21 +69,18 @@ fn main() -> amethyst::Result<()> {
     let display_config_path = config_dir.join("display.ron");
     let input_bundle = InputBundle::<StringBindings>::new();
     let game_data = GameDataBuilder::default()
-        .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
-        .with_bundle(RenderingBundle::<DefaultBackend>::new()
-            .with_plugin(RenderToWindow::from_config_path(display_config_path)
-                             .with_clear(BACKGROUNDCOLOR),)
-            .with_plugin(RenderImgui::<StringBindings>::default())
-            .with_plugin(RenderFlat2D::default()))?
         // Active image system
         .with(TwImageActiveSystem::default(), "image_active_system", &["input_system"])
+        // debug
+//        .with(DebugLinesSystem, "ex", &["input_system"])
         // Camera system
         .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &["input_system"])
         .with(CameraKeepRatioSystem, "camera_ratio_system", &["input_system", "image_active_system"])
         .with(CameraZoomNavigationSystem::default(), "camera_zoom_system", &["input_system", "image_active_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["input_system", "image_active_system"])
         .with(CameraCenterSystem::default(), "camera_center_system", &["input_system", "image_active_system"])
+        .with(CameraOrignalScaleSystem, "camera_original_system", &["input_system", "image_active_system"])
         // Image system
         .with(TwImageLayoutSystem::default(), "image_layout_system", &["image_active_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["input_system", "image_active_system"])
@@ -97,7 +95,17 @@ fn main() -> amethyst::Result<()> {
         .with(TwPlaceHolderCacheSystem, "images_to_cache", &["input_system"])
         .with(TwImageDroppedSystem, "dropped_images", &["input_system"])
         .with(TwInputsHandlerScreenToWorldSystem, "convert_screen_to_world", &[])
-        .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"]);
+        .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"])
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(RenderingBundle::<DefaultBackend>::new()
+            .with_plugin(RenderToWindow::from_config_path(display_config_path)
+                             .with_clear(BACKGROUNDCOLOR),)
+            .with_plugin(RenderImgui::<StringBindings>::default())
+            .with_plugin(RenderDebugLines::default())
+            .with_plugin(RenderSkybox::with_colors(
+                palette::Srgb::new(BACKGROUNDCOLOR[0], BACKGROUNDCOLOR[1], BACKGROUNDCOLOR[2]),
+                palette::Srgb::new(BACKGROUNDCOLOR2[0], BACKGROUNDCOLOR2[1], BACKGROUNDCOLOR2[2])))
+            .with_plugin(RenderFlat2D::default()))?;
 
     let assets_dir = app_root.join("assets");
     let mut game = Application::new(assets_dir, Tower::default(), game_data)?;
