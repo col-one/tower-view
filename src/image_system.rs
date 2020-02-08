@@ -246,51 +246,52 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
             if !cache_res.is_none() {
                 let mut cache = cache_res.unwrap();
                 if !cache.is_empty() {
-                    let (tw_image, texture_data) = cache.get(&tw_place.twimage_path).unwrap();
-                    // create entity
-                    let texture_storage = &mut asset_texture;
-                    let mut sprites = Vec::with_capacity(1);
-                    let loader = &mut loader;
-                    let texture = loader.load_from_data(texture_data.clone(), (), &texture_storage);
-                    let sprite = Sprite::from_pixel_values(
-                        tw_image.width, tw_image.height, tw_image.width,
-                        tw_image.height, 0, 0, [0.0, 0.0],
-                        false, false,
-                    );
-                    sprites.push(sprite);
-                    let sprite_sheet = SpriteSheet {
-                        texture,
-                        sprites,
-                    };
-                    let sprite_handle = loader.load_from_data(
-                        sprite_sheet,
-                        (),
-                        &asset_sprite,
-                    );
-                    let mut transform = transform.clone();
-                    transform.set_translation_z(tw_data.twimage_count * 0.001);
-                    let sprite_render = SpriteRender {
-                        sprite_sheet: sprite_handle.clone(),
-                        sprite_number: 0,
-                    };
-                    let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
-                    world.create_entity(&*entities)
-                        .with(transform)
-                        .with(sprite_render)
-                        .with(tw_image.clone())
-                        .with(Transparent)
-                        .with(tint)
-                        .build();
-                    if !tw_place.from_next {
-                        tw_data.twimage_count = tw_data.twimage_count + 1.0;
+                    if let Some((tw_image, texture_data)) = cache.get(&tw_place.twimage_path) {
+                        // create entity
+                        let texture_storage = &mut asset_texture;
+                        let mut sprites = Vec::with_capacity(1);
+                        let loader = &mut loader;
+                        let texture = loader.load_from_data(texture_data.clone(), (), &texture_storage);
+                        let sprite = Sprite::from_pixel_values(
+                            tw_image.width, tw_image.height, tw_image.width,
+                            tw_image.height, 0, 0, [0.0, 0.0],
+                            false, false,
+                        );
+                        sprites.push(sprite);
+                        let sprite_sheet = SpriteSheet {
+                            texture,
+                            sprites,
+                        };
+                        let sprite_handle = loader.load_from_data(
+                            sprite_sheet,
+                            (),
+                            &asset_sprite,
+                        );
+                        let mut transform = transform.clone();
+                        transform.set_translation_z(tw_data.twimage_count * 0.001);
+                        let sprite_render = SpriteRender {
+                            sprite_sheet: sprite_handle.clone(),
+                            sprite_number: 0,
+                        };
+                        let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
+                        world.create_entity(&*entities)
+                            .with(transform)
+                            .with(sprite_render)
+                            .with(tw_image.clone())
+                            .with(Transparent)
+                            .with(tint)
+                            .build();
+                        if !tw_place.from_next {
+                            tw_data.twimage_count = tw_data.twimage_count + 1.0;
+                        }
+                        // delete placeholder
+                        entities.delete(entity);
+                        tw_in.z_ordered_entities.clear();
+                        tw_in.active_entities.clear();
+                        // set working dir
+                        let tw_image_path = tw_image.file_name.clone();
+                        tw_data.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
                     }
-                    // delete placeholder
-                    entities.delete(entity);
-                    tw_in.z_ordered_entities.clear();
-                    tw_in.active_entities.clear();
-                    // set working dir
-                    let tw_image_path = tw_image.file_name.clone();
-                    tw_data.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
                 }
             }
         }

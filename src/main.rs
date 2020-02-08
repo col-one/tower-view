@@ -44,7 +44,7 @@ use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteS
                           TwImageNextSystem};
 use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
 use crate::scene_system::{SceneBoundingBox, DebugLinesSystem};
-use crate::ui_system::{SliderAlphaSystem, SliderRedSystem};
+use crate::ui_system::{SliderChannelsSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
 
 
@@ -88,14 +88,15 @@ fn main() -> amethyst::Result<()> {
         .with(TwImageToFrontSystem, "image_tofront_system", &["input_system", "image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["input_system", "image_active_system"])
         .with(TwImageMoveSystem::default(), "image_move_system", &["input_system", "image_active_system"])
-        .with(SliderRedSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
         .with(TwPlaceHolderLoadTwImageSystem, "place_holder_system", &["input_system"])
         .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["input_system", "place_holder_system"])
         .with(TwImageNextSystem, "image_next_cache", &["input_system"])
         .with(TwPlaceHolderCacheSystem, "images_to_cache", &["input_system"])
         .with(TwImageDroppedSystem, "dropped_images", &["input_system"])
         .with(TwInputsHandlerScreenToWorldSystem, "convert_screen_to_world", &[])
-        .with(SliderAlphaSystem{open: false}, "slider_red_system", &["input_system", "image_active_system"])
+        // UI
+        .with(SliderChannelsSystem{open: false}, "slider_alpha_system", &["input_system", "image_active_system"])
+        // bundle + plugins
         .with_bundle(TransformBundle::new())?
         .with_bundle(RenderingBundle::<DefaultBackend>::new()
             .with_plugin(RenderToWindow::from_config_path(display_config_path)

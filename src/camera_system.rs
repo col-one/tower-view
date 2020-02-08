@@ -188,8 +188,6 @@ impl<'s> System<'s> for CameraOrignalScaleSystem {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::S) && tw_in.keys_pressed.len() == 1 {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, transform) = (&tw_cameras, &mut transforms).join().next().unwrap();
-//                transform.set_translation_x((tw_data.active_rect.min.x + tw_data.active_rect.max.x) / 2.0);
-//                transform.set_translation_y((tw_data.active_rect.min.y + tw_data.active_rect.max.y) / 2.0);
                 transform.set_translation_z(MAGIC_NUMBER_Z);
             }
         }

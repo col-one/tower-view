@@ -90,7 +90,6 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                 }
                 world.create_entity(&*entities)
                     .with(position)
-//                        .with(sprite)
                     .with(TwPlaceHolder {from_next: false, twimage_path: path.clone(), to_cache: true })
                     .build();
             } else {

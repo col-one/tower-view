@@ -5,76 +5,43 @@ use amethyst_imgui::{
 	imgui::{im_str, ImString, Condition},
 	RenderImgui,
 };
+use amethyst::renderer::rendy::wsi::winit::{Window};
 use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings};
 use crate::image::{TwActiveUiComponent, TwImage};
+use crate::inputshandler::TwInputsHandler;
 
 
 pub const UI_WIDTH: f32 = 300.0;
 
+
 #[derive(Default, Clone, Copy)]
-pub struct SliderAlphaSystem {
+pub struct SliderChannelsSystem {
 	pub open: bool,
 }
 
-impl<'s> amethyst::ecs::System<'s> for SliderAlphaSystem {
-	type SystemData = (Read<'s, InputHandler<StringBindings>>,
+impl<'s> amethyst::ecs::System<'s> for SliderChannelsSystem {
+	type SystemData = (ReadExpect<'s, TwInputsHandler>,
 	                   ReadStorage<'s, TwActiveUiComponent>,
 					   WriteStorage<'s, TwImage>);
 	fn run(&mut self, (
-			input,
+			tw_in,
 		   	twactives,
 			mut twimages
 	) : Self::SystemData) {
 		for (twactive, twimage) in (&twactives, &mut twimages).join() {
-			if input.key_is_down(VirtualKeyCode::A) && input.key_is_down(VirtualKeyCode::LShift) {
+			if tw_in.keys_pressed.contains(&VirtualKeyCode::C) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
 				self.open = true;
 			}
-			if input.key_is_down(VirtualKeyCode::Escape) { self.open = false }
-			if self.open {
-				amethyst_imgui::with(|ui| {
-					let window = imgui::Window::new(im_str!("Alpha Blending"))
-						.always_auto_resize(true)
-						.size([UI_WIDTH, 0.0], Condition::Always)
-						.position([ui.io().mouse_pos[0] - UI_WIDTH * 0.5, ui.io().mouse_pos[1]], Condition::Appearing)
-						.build(ui, || {
-							let mut slider = imgui::Slider::new(im_str!("Amount"), 0.0..=1.0)
-								.build(ui, &mut twimage.alpha);
-						}
-					);
-				});
-			}
-		}
-		if twactives.is_empty() { self.open = false }
-    }
-}
-
-
-#[derive(Default, Clone, Copy)]
-pub struct SliderRedSystem {
-	pub open: bool,
-}
-
-impl<'s> amethyst::ecs::System<'s> for SliderRedSystem {
-	type SystemData = (Read<'s, InputHandler<StringBindings>>,
-	                   ReadStorage<'s, TwActiveUiComponent>,
-					   WriteStorage<'s, TwImage>);
-	fn run(&mut self, (
-			input,
-		   	twactives,
-			mut twimages
-	) : Self::SystemData) {
-		for (twactive, twimage) in (&twactives, &mut twimages).join() {
-			if input.key_is_down(VirtualKeyCode::C) && input.key_is_down(VirtualKeyCode::LShift) {
-				self.open = true;
-			}
-			if input.key_is_down(VirtualKeyCode::Escape) { self.open = false }
+			if tw_in.keys_pressed.contains(&VirtualKeyCode::Escape) { self.open = false }
 			if self.open {
 				amethyst_imgui::with(|ui| {
 					let window = imgui::Window::new(im_str!("Channels"))
-						.always_auto_resize(true)
+//						.always_auto_resize(true)
 						.size([UI_WIDTH, 0.0], Condition::Always)
 						.position([ui.io().mouse_pos[0] - UI_WIDTH * 0.5, ui.io().mouse_pos[1]], Condition::Appearing)
 						.build(ui, || {
+							let mut slider = imgui::Slider::new(im_str!("Alpha Amount"), 0.0..=1.0)
+								.build(ui, &mut twimage.alpha);
 							let mut slider = imgui::Slider::new(im_str!("Red Amount"), 0.0..=1.0)
 								.build(ui, &mut twimage.red);
 							let mut slider = imgui::Slider::new(im_str!("Green Amount"), 0.0..=1.0)
