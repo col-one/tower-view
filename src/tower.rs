@@ -2,34 +2,32 @@ use structopt::StructOpt;
 use amethyst::{
     ecs::prelude::*,
     prelude::*,
-    input::{InputHandler, StringBindings},
-    core::{Stopwatch, transform::Transform, math::{Point2, Vector3, Point3}},
-    winit::{MouseButton, ElementState, WindowId, dpi::{LogicalPosition}},
+    core::math::{Point2, Point3},
     renderer::types::TextureData,
-    renderer::{ActiveCamera, Camera, debug_drawing::{DebugLines, DebugLinesComponent, DebugLinesParams}, palette::Srgba},
+    renderer::{debug_drawing::{DebugLines, DebugLinesComponent, DebugLinesParams}},
     window::ScreenDimensions,
 };
-use geo::{Rect, Coordinate};
+use geo::{Rect};
 
-use crate::image;
+
 use crate::camera;
-use crate::inputshandler;
+
 use crate::image::TwImage;
 use crate::args_cli::Opt;
 use crate::inputshandler::{get_drop_file, get_moved_mouse, TwInputsHandler, alt_mouse_pressed,
                            mouse_released, alt_mouse_released, key_pressed, key_released,
-                           ctrl_mouse_pressed, ctrl_mouse_released, mouse_pressed, get_delta_position};
-use crate::placeholder;
-use crate::utils::{list_valid_files, is_valid_file};
+                           ctrl_mouse_pressed, ctrl_mouse_released, mouse_pressed};
 
-use crate::placeholder::TwPlaceHolder;
-use std::sync::mpsc::{Sender, Receiver};
-use std::future::Future;
+use crate::utils::{list_valid_files};
+
+
+
+
 use std::sync::{Arc, Mutex};
 use std::ffi::{OsStr, OsString};
 use std::collections::HashMap;
 use std::path::Path;
-use std::thread::sleep;
+
 use std::time::Duration;
 
 
@@ -37,7 +35,6 @@ pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const BACKGROUNDCOLOR2: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
 pub const WINDOWWIDTH: f32 = 1080.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
-pub const MAXHEIGHT: f32 = 70000.0;
 pub const MAGIC_NUMBER_Z: f32 = 886.81;
 
 
@@ -78,7 +75,7 @@ pub struct Tower;
 
 impl<'a> SimpleState for Tower {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        let mut world = data.world;
+        let world = data.world;
         // init camera
         camera::initialise_camera(world);
         // command line arguments
@@ -143,7 +140,7 @@ impl<'a> SimpleState for Tower {
                 }
             }
             // alt mouse release
-            if let Some(button) = alt_mouse_released(&event) {
+            if let Some(_button) = alt_mouse_released(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.alt_mouse_button_pressed = None;
@@ -158,7 +155,7 @@ impl<'a> SimpleState for Tower {
                 }
             }
             // ctrl mouse release
-            if let Some(button) = ctrl_mouse_released(&event) {
+            if let Some(_button) = ctrl_mouse_released(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.ctrl_mouse_button_pressed = None;
@@ -177,7 +174,7 @@ impl<'a> SimpleState for Tower {
                 }
             }
             // mouse released event
-            if let Some(button) = mouse_released(&event) {
+            if let Some(_button) = mouse_released(&event) {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.mouse_button_pressed = None;

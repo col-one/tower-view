@@ -30,7 +30,7 @@ pub fn list_valid_files(dir: &OsStr) -> Vec<OsString> {
 
 pub fn premultiply_by_alpha(pixels: &Vec<u8>) -> Vec<u8> {
     let mut pixels_mult = Vec::new();
-    for (mut i, pixel) in pixels.iter().enumerate() {
+    for (mut i, _pixel) in pixels.iter().enumerate() {
         i += 1;
         if i % 4 == 0 {
             i -= 1;
@@ -50,8 +50,8 @@ pub fn premultiply_by_alpha(pixels: &Vec<u8>) -> Vec<u8> {
 
 pub fn add_alpha_channel(pixels: &Vec<u8>) -> Vec<u8> {
     let mut pixels_alpha = Vec::new();
-    let offset_size = pixels.iter().count() / 4;
-    for (mut i, pixel) in pixels.iter().enumerate() {
+    let _offset_size = pixels.iter().count() / 4;
+    for (i, pixel) in pixels.iter().enumerate() {
         if i % 3 == 0 && i != 0 {
             pixels_alpha.push(255);
         }

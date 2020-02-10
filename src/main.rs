@@ -5,10 +5,8 @@ use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
 
-use structopt::StructOpt;
 use amethyst::{
     core::transform::TransformBundle,
-    ecs::prelude::{ReadExpect, SystemData},
     prelude::*,
     renderer::{
         palette,
@@ -16,7 +14,6 @@ use amethyst::{
         types::DefaultBackend,
         RenderingBundle,
     },
-    utils::ortho_camera,
     utils::application_root_dir,
     input::{InputBundle, StringBindings},
 };
@@ -36,14 +33,14 @@ mod ui_system;
 mod placeholder;
 mod placeholder_system;
 
-use crate::args_cli::Opt;
+
 use crate::tower::{Tower, BACKGROUNDCOLOR, BACKGROUNDCOLOR2};
 use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem, CameraOrignalScaleSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
                           TwImageNextSystem};
 use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
-use crate::scene_system::{SceneBoundingBox, DebugLinesSystem};
+use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderChannelsSystem};
 use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
 

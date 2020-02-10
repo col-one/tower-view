@@ -2,11 +2,9 @@ use amethyst::{
         assets::{AssetStorage},
         renderer::{
             SpriteRender, SpriteSheet,
-            camera::{ActiveCamera, Camera},
-            rendy::wsi::winit::{MouseButton, Window},
+            camera::{Camera},
         },
-        prelude::*,
-        input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings},
+        input::{VirtualKeyCode},
         core::{SystemDesc, Transform, math::{Point2, Point3, Vector2}, geometry::Plane},
         derive::SystemDesc,
         ecs::{Join, Read, System, SystemData, World, WriteStorage},
@@ -57,9 +55,7 @@ impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
 
 
 #[derive(SystemDesc, Default)]
-pub struct TwImageActiveSystem{
-    button_pressed: bool
-}
+pub struct TwImageActiveSystem;
 
 impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
@@ -81,7 +77,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
         entities
     ): Self::SystemData) {
         let mut remove_active = false;
-        for (sprite, transform, tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
+        for (sprite, transform, _tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
             let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
             let is_present = tw_in.z_ordered_entities.iter().any(|e| e == &entity);
@@ -115,7 +111,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
                         }
                     }
                 } else {
-                    if let Some(ok) = tw_actives.remove(entity) { info!("remove active twimage") };
+                    if let Some(_ok) = tw_actives.remove(entity) { info!("remove active twimage") };
                     if let Some(id) = tw_in.active_entities.iter().position(|i| i == &entity) {
                         tw_in.active_entities.remove(id);
                     }
@@ -125,7 +121,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
         // prepare remove active
         if tw_in.keys_pressed.contains(&VirtualKeyCode::Escape) && tw_in.keys_pressed.len() == 1  { remove_active = true }
         let mut entities_to_remove = Vec::new();
-        for (tw_ui_active, entity) in (&mut tw_ui_actives, &*entities).join() {
+        for (_tw_ui_active, entity) in (&mut tw_ui_actives, &*entities).join() {
             entities_to_remove.push(entity);
         }
         if remove_active {

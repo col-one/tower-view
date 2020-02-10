@@ -1,15 +1,15 @@
-use amethyst::prelude::*;
-use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
-use amethyst::prelude::*;
-use amethyst::core::{Stopwatch, math::{dimension::U3, Point3, Point2}, Transform};
+
+use amethyst::ecs::prelude::{Entity};
+
+use amethyst::core::{Stopwatch};
 use amethyst::{
         winit::{VirtualKeyCode, Event, WindowEvent, dpi::LogicalPosition, ElementState, MouseButton,
-                KeyboardInput, WindowId, DeviceId, ModifiersState},
+                KeyboardInput, ModifiersState},
 };
 
 use uuid::Uuid;
-use crate::image::TwImage;
-use std::time::Duration;
+
+
 
 
 pub fn get_drop_file(event: &Event) -> Option<String> {
@@ -30,11 +30,6 @@ pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
         },
         _ => None,
     }
-}
-
-pub fn get_delta_position(position: (f32, f32), position2: (f32, f32)) -> (f32, f32) {
-    let dist = ((position2.0 - position.0), (position2.1 - position.1));
-    (dist.0, dist.1)
 }
 
 pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {

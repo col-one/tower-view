@@ -1,12 +1,11 @@
 use amethyst::prelude::*;
-use amethyst::{utils::ortho_camera::{CameraOrtho, CameraNormalizeMode, CameraOrthoWorldCoordinates},
-            core::transform::Transform,
+use amethyst::{core::transform::Transform,
             renderer::{Camera},
-            core::{math::{Matrix4, Point2, Point3, Vector2}, Time, Axis2},
+            core::math::{Point2, Point3, Vector2},
 
 };
-use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity};
-use amethyst::prelude::*;
+use amethyst::ecs::prelude::{Component, DenseVecStorage};
+
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, MAGIC_NUMBER_Z};
 
 
@@ -20,7 +19,7 @@ impl Component for TwCamera {
 pub fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
     transform.set_translation_xyz(0.0, 0.0, MAGIC_NUMBER_Z);
-    let cam_entity = world.create_entity()
+    let _cam_entity = world.create_entity()
         .with(TwCamera)
         .with(Camera::standard_3d(WINDOWWIDTH, WINDOWHEIGHT))
         .with(transform)

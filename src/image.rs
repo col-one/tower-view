@@ -1,26 +1,17 @@
-use amethyst::renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture, Sprite,
-    rendy::texture::TextureBuilder, Transparent,
+use amethyst::renderer::{
+    rendy::texture::TextureBuilder,
     rendy::hal::image::{Kind, ViewKind, Filter, WrapMode, Anisotropic, SamplerInfo, PackedColor},
     rendy::hal::format,
     types::TextureData,
     Format,
-    resources::Tint,
-    palette::Srgba,
     };
-use amethyst::core::transform::Transform;
-use amethyst::ecs::prelude::{Component, DenseVecStorage, Entity, VecStorage, };
-use amethyst::prelude::*;
-use amethyst::assets::{AssetStorage, Loader, Handle};
+use amethyst::ecs::prelude::{Component, DenseVecStorage, VecStorage, };
 use image;
-use image::{GenericImageView, ImageDecoder, ImageDecoderExt, ColorType};
+use image::{GenericImageView, ColorType};
 use std::borrow::Cow;
 use uuid::Uuid;
-use std::path::{PathBuf, Path};
 
-
-use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
 use crate::utils::{premultiply_by_alpha, add_alpha_channel};
-use crate::args_cli::Opt;
 
 
 // input path
@@ -30,12 +21,6 @@ pub struct InputComponent {
 
 impl Component for InputComponent {
     type Storage = VecStorage<Self>;
-}
-
-impl  InputComponent {
-    fn new(path: String) -> Self {
-        Self {path}
-    }
 }
 
 
@@ -143,79 +128,7 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     (TwImage::new(dimensions.0, dimensions.1, name), TextureData(texture_builder))
 }
 
-pub fn create_sprite_sheet(world: &mut World, texture_data: TextureData, tw_image: &TwImage) -> Handle<SpriteSheet> {
-    let texture_storage = &world.fetch_mut::<AssetStorage<Texture>>();
-    let mut sprites = Vec::with_capacity(1);
-    let loader = &world.fetch_mut::<Loader>();
-    let texture = loader.load_from_data(texture_data, (), &texture_storage);
-    let sprite = Sprite::from_pixel_values(
-            tw_image.width, tw_image.height, tw_image.width,
-            tw_image.height, 0, 0, [0.0, 0.0],
-            false, false,
-        );
-    sprites.push(sprite);
-    let sprite_sheet = SpriteSheet {
-        texture,
-        sprites,
-    };
-    loader.load_from_data(
-        sprite_sheet,
-        (),
-        &world.read_resource::<AssetStorage<SpriteSheet>>(),
-    )
-}
 
-pub fn create_entity_twimage(world: &mut World, tw_image: TwImage, sprite_sheet: Handle<SpriteSheet>, init_z: f32) {
-    let mut transform = Transform::default();
-    transform.set_translation_x( 0.0);
-    transform.set_translation_y( 0.0);
-    transform.set_translation_z( init_z as f32);
-    let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet.clone(),
-        sprite_number: 0,
-    };
-    let tint = Tint(Srgba::new(1.0, 1.0, 1.0, 1.0));
-    world.create_entity()
-        .with(transform)
-        .with(sprite_render)
-        .with(tw_image)
-        .with(Transparent)
-        .with(tint)
-        .build();
-}
 
-pub fn load_image_from_inputs_arg(world: &mut World) {
-    let mut z_count = {
-        let mut td = world.fetch_mut::<TowerData>();
-        td.twimage_count
-    };
-    let inputs = {
-        let opt = world.fetch::<Opt>();
-        opt.inputs.iter().map(|input| InputComponent::new(input.to_owned()))
-            .collect::<Vec<_>>()
-    };
-    for path in &inputs {
-        let (mut tw_image, texture_data) = load_texture_from_file(&path.path);
-        let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
-        tw_image.z_order = z_count;
-        create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-        z_count += 0.001;
-    }
-        let mut td = world.fetch_mut::<TowerData>();
-        td.twimage_count = z_count;
-        td.working_dir = Path::new(&inputs.last().unwrap().path).parent().unwrap().as_os_str().to_owned();
-}
 
-pub fn load_image_from_path(world: &mut World, path: &str) {
-    let mut z_count = {
-        let mut td = world.fetch_mut::<TowerData>();
-        td.twimage_count
-    };
-    let (mut tw_image, texture_data) = load_texture_from_file(path);
-    let sprite_sheet = create_sprite_sheet(world, texture_data, &tw_image);
-    tw_image.z_order = z_count;
-    create_entity_twimage(world, tw_image, sprite_sheet, z_count);
-    z_count += 0.001;
-    let mut td = world.fetch_mut::<TowerData>();
-    td.twimage_count = z_count;
-}
+

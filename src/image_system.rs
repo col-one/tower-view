@@ -1,33 +1,30 @@
-use amethyst::core::{SystemDesc, Transform, math::{Point2, Vector2}, Stopwatch};
+use amethyst::core::{SystemDesc, Transform};
 use amethyst::derive::SystemDesc;
-use amethyst::input::{InputHandler, ControllerButton, VirtualKeyCode, StringBindings};
+use amethyst::input::{VirtualKeyCode};
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
 use amethyst::ecs::prelude::*;
-use amethyst::renderer::rendy::{wsi::winit::MouseButton, texture::TextureBuilder};
-use amethyst::renderer::{camera::{ActiveCamera, Camera, Projection},
-                        sprite::{SpriteRender, SpriteSheet, SpriteSheetFormat, Sprite},
+use amethyst::renderer::{sprite::{SpriteRender, SpriteSheet, Sprite},
                         resources::Tint,
                         palette::Srgba,
                         Texture, Transparent,
 
 };
 use amethyst::assets::{AssetStorage, Loader};
-use amethyst::input::is_mouse_button_down;
 
-use uuid::Uuid;
-use std::{thread, time};
 
-use crate::image::{TwImage, TwActiveUiComponent, TwActiveComponent};
+use std::{time};
+
+use crate::image::{TwImage, TwActiveComponent};
 use crate::inputshandler::{TwInputsHandler};
-use crate::tower::{WINDOWWIDTH, WINDOWHEIGHT, TowerData};
+use crate::tower::{TowerData};
 use crate::placeholder::TwPlaceHolder;
 
-use log;
+
 use std::cmp::Ordering::Equal;
 use std::sync::Arc;
 use std::path::Path;
 use std::ffi::OsString;
-use crate::raycasting_system::screen_to_world;
+
 
 
 #[derive(SystemDesc, Default)]
@@ -41,12 +38,12 @@ impl<'s> System<'s> for TwImageMoveSystem {
                        WriteExpect<'s, TwInputsHandler>,
                        ReadStorage<'s, TwActiveComponent>);
     fn run(&mut self, (
-            mut tw_images,
+            _tw_images,
             mut transforms,
             mut tw_in,
-            tw_actives,
+            _tw_actives,
         ): Self::SystemData) {
-        if let Some(button) = &tw_in.alt_mouse_button_pressed {
+        if let Some(_button) = &tw_in.alt_mouse_button_pressed {
             tw_in.active_busy = true;
             if let Some(top_active_entity) = tw_in.active_entities.last() {
                 if let Some(world_pos) = &tw_in.mouse_world_position {
@@ -56,7 +53,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
                         self.click_offset = Some(offset);
                     }
                     if let Some(offset) = self.click_offset {
-                        let mut trans = transforms.get_mut(*top_active_entity).unwrap();
+                        let trans = transforms.get_mut(*top_active_entity).unwrap();
                         trans.set_translation_x(world_pos.0 + offset.0);
                         trans.set_translation_y(world_pos.1 + offset.1);
                     }
@@ -99,8 +96,8 @@ impl<'s> System<'s> for TwImageLayoutSystem {
             let mut sprite_widths = Vec::new();
             let mut join_entities = Vec::new();
             // get max width and height
-            for j in 0..twimage_count as usize {
-                let (tw_image, transform, sprite, entity) = comp_iter.next().unwrap();
+            for _j in 0..twimage_count as usize {
+                let (_tw_image, _transform, sprite, entity) = comp_iter.next().unwrap();
                 join_entities.push(entity);
                 let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                 let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -170,8 +167,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
         mut transforms,
         entities,
     ): Self::SystemData) {
-        for (tw_image, transform, entity) in (&mut tw_images, &mut transforms, &*entities).join() {
-            let mut current_index = tw_image.z_order as usize;
+        for (_, transform, entity) in (&mut tw_images, &mut transforms, &*entities).join() {
             if tw_in.keys_pressed.contains(&VirtualKeyCode::T) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
                 if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                     if let Some(active_entity) = tw_in.active_entities.last() {
@@ -183,7 +179,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
                         }
                     }
                 }
-                current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
+                let current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
                 transform.set_translation_z(current_index as f32 * 0.001);
             }
         }
@@ -226,7 +222,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                        Write<'s, LazyUpdate>,
                        WriteExpect<'s, TwInputsHandler>);
     fn run(&mut self, (
-        mut tw_images,
+        _tw_images,
         mut tw_places,
         mut transforms,
         mut tw_data,
@@ -234,17 +230,17 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
         mut asset_texture,
         asset_sprite,
         mut loader,
-        mut world,
+        world,
         mut tw_in
     ): Self::SystemData) {
         for (tw_place, transform, entity) in (&mut tw_places, &mut transforms, &*entities).join() {
             let arc_cache = Arc::clone(&tw_data.cache);
             let cache_res = match arc_cache.try_lock() {
                 Ok(cache) => Some(cache),
-                Err(e) => None
+                Err(_e) => None
             };
             if !cache_res.is_none() {
-                let mut cache = cache_res.unwrap();
+                let cache = cache_res.unwrap();
                 if !cache.is_empty() {
                     if let Some((tw_image, texture_data)) = cache.get(&tw_place.twimage_path) {
                         // create entity
@@ -285,7 +281,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                             tw_data.twimage_count = tw_data.twimage_count + 1.0;
                         }
                         // delete placeholder
-                        entities.delete(entity);
+                        entities.delete(entity).expect("Failed to delete entity.");
                         tw_in.z_ordered_entities.clear();
                         tw_in.active_entities.clear();
                         // set working dir
@@ -310,7 +306,7 @@ impl<'s> System<'s> for TwImageNextSystem {
     fn run(&mut self, (
         mut tw_in,
         tw_images,
-        mut entities,
+        _entities,
         mut tower_data,
         world,
     ): Self::SystemData) {
@@ -320,10 +316,9 @@ impl<'s> System<'s> for TwImageNextSystem {
                     let tw_image = tw_images.get(*active_entity).unwrap();
                     if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
                         let mut index = index.clone() as i16;
-                        let mut new_path = OsString::new();
                         index += 1;
                         if index < tower_data.files_order.len() as i16 {
-                            new_path = tower_data.files_order[index as usize].clone();
+                            let new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
                             world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
@@ -339,10 +334,9 @@ impl<'s> System<'s> for TwImageNextSystem {
                     let tw_image = tw_images.get(*active_entity).unwrap();
                     if let Some(index) = tower_data.files_order.iter().position(|r| r == &OsString::from(&tw_image.file_name)) {
                         let mut index = index.clone() as i16;
-                        let mut new_path = OsString::new();
                         index -= 1;
                         if index >= 0 {
-                            new_path = tower_data.files_order[index as usize].clone();
+                            let new_path = tower_data.files_order[index as usize].clone();
                             info!("{:?}", new_path);
                             world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);

@@ -1,8 +1,5 @@
-use std::path::PathBuf;
 use structopt::StructOpt;
-use std::str::FromStr;
 use std::iter::Iterator;
-use std::string::ParseError;
 
 #[derive(Debug, StructOpt)]
 /// tower is an image viewer software made for animation and vfx.
