@@ -78,42 +78,43 @@ impl<'s> System<'s> for TwImageActiveSystem {
     ): Self::SystemData) {
         let mut remove_active = false;
         for (sprite, transform, _tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
-            let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
-            let sprite = &sprite_sheet.sprites[sprite.sprite_number];
-            let is_present = tw_in.z_ordered_entities.iter().any(|e| e == &entity);
-            if !is_present {
-                tw_in.z_ordered_entities.push(entity);
-            }
-            let (min_x, max_x, min_y, max_y) = {
-                (
-                    transform.translation().x - (sprite.width * 0.5),
-                    transform.translation().x + (sprite.width * 0.5),
-                    transform.translation().y - (sprite.height * 0.5),
-                    transform.translation().y + (sprite.height * 0.5),
-                )
-            };
-            if let Some(mouse_world_position) = tw_in.mouse_world_position {
-                // if mouse inside sprite
-                if mouse_world_position.0 > min_x
-                    && mouse_world_position.0 < max_x
-                    && mouse_world_position.1 > min_y
-                    && mouse_world_position.1 < max_y
-                {
-                    // if active is busy (used by action) or actives empty
-                    if !tw_in.active_busy || tw_in.active_entities.is_empty() {
-                        tw_actives.insert(entity, TwActiveComponent).expect("Failed to add TwActiveComponent.");
-                        tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveComponent.");
-                        if tw_in.active_entities.len() >= 2 {
-                            tw_in.active_entities.remove(0);
-                            tw_in.active_entities.push(entity);
-                        } else {
-                            tw_in.active_entities.push(entity);
+            if let Some(sprite_sheet) = sprite_sheets.get(&sprite.sprite_sheet) {
+                let sprite = &sprite_sheet.sprites[sprite.sprite_number];
+                let is_present = tw_in.z_ordered_entities.iter().any(|e| e == &entity);
+                if !is_present {
+                    tw_in.z_ordered_entities.push(entity);
+                }
+                let (min_x, max_x, min_y, max_y) = {
+                    (
+                        transform.translation().x - (sprite.width * 0.5),
+                        transform.translation().x + (sprite.width * 0.5),
+                        transform.translation().y - (sprite.height * 0.5),
+                        transform.translation().y + (sprite.height * 0.5),
+                    )
+                };
+                if let Some(mouse_world_position) = tw_in.mouse_world_position {
+                    // if mouse inside sprite
+                    if mouse_world_position.0 > min_x
+                        && mouse_world_position.0 < max_x
+                        && mouse_world_position.1 > min_y
+                        && mouse_world_position.1 < max_y
+                    {
+                        // if active is busy (used by action) or actives empty
+                        if !tw_in.active_busy || tw_in.active_entities.is_empty() {
+                            tw_actives.insert(entity, TwActiveComponent).expect("Failed to add TwActiveComponent.");
+                            tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveComponent.");
+                            if tw_in.active_entities.len() >= 2 {
+                                tw_in.active_entities.remove(0);
+                                tw_in.active_entities.push(entity);
+                            } else {
+                                tw_in.active_entities.push(entity);
+                            }
                         }
-                    }
-                } else {
-                    if let Some(_ok) = tw_actives.remove(entity) { info!("remove active twimage") };
-                    if let Some(id) = tw_in.active_entities.iter().position(|i| i == &entity) {
-                        tw_in.active_entities.remove(id);
+                    } else {
+                        if let Some(_ok) = tw_actives.remove(entity) { info!("remove active twimage") };
+                        if let Some(id) = tw_in.active_entities.iter().position(|i| i == &entity) {
+                            tw_in.active_entities.remove(id);
+                        }
                     }
                 }
             }

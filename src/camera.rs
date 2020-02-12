@@ -1,3 +1,9 @@
+/// camera.rs is the file creation for camera entity.
+/// Every non system instruction about camera are placed here.
+/// The main camera of Tower is perspective camera, it is placed at the origin (0,0,0)
+/// then step back of the MAGIC_NUMBER_Z on axe Z, it's a known limitation cause this number
+/// is deduce from screen hdpi to get the 100% display  of the images.
+
 use amethyst::prelude::*;
 use amethyst::{core::transform::Transform,
             renderer::{Camera},
@@ -8,14 +14,16 @@ use amethyst::ecs::prelude::{Component, DenseVecStorage};
 
 use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, MAGIC_NUMBER_Z};
 
-
+/// TwCamera is the Tower camera component, currently it handling nothing
+/// it's more here as placeholder.
 pub struct TwCamera;
 
 impl Component for TwCamera {
     type Storage = DenseVecStorage<Self>;
 }
 
-
+/// Init the Entity with different components : TwCamera, Camera, Transform.
+/// Camera size is given by WINDOWWIDTH and WINDOWHEIGHT.
 pub fn initialise_camera(world: &mut World) {
     let mut transform = Transform::default();
     transform.set_translation_xyz(0.0, 0.0, MAGIC_NUMBER_Z);
@@ -26,7 +34,8 @@ pub fn initialise_camera(world: &mut World) {
         .build();
 }
 
-
+/// Give the screen coord from a world one.
+/// Tips: to have a coherent result don't forget to multiply this result with the screen hdpi
 pub fn world_to_screen(
     camera: &Camera,
     world_position: Point3<f32>,
