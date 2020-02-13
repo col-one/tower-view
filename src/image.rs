@@ -110,18 +110,18 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
         .with_kind(Kind::D2(dimensions.0, dimensions.1, 1, 1))
         .with_view_kind(ViewKind::D2)
         .with_sampler_info(SamplerInfo {
-            min_filter: Filter::Linear,
+            min_filter: Filter::Nearest,
             mag_filter: Filter::Nearest,
-            mip_filter: Filter::Linear,
+            mip_filter: Filter::Nearest,
             wrap_mode: (WrapMode::Clamp, WrapMode::Clamp, WrapMode::Clamp),
             lod_bias: 0.0.into(),
             lod_range: std::ops::Range {
                 start: 0.0.into(),
-                end: 100.0.into(),
+                end: 1.0.into(),
             },
             comparison: None,
             border: PackedColor(0),
-            anisotropic: Anisotropic::Off,
+            anisotropic: Anisotropic::On(8),
             })
         .with_raw_data(Cow::Owned(pixels), color_type)
         .with_swizzle(swizzle);

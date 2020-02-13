@@ -1,9 +1,7 @@
 /// camera.rs is the file creation for camera entity.
 /// Every non system instruction about camera are placed here.
 /// The main camera of Tower is perspective camera, it is placed at the origin (0,0,0)
-/// then step back of the MAGIC_NUMBER_Z on axe Z, it's a known limitation cause this number
-/// is deduce from screen hdpi to get the 100% display  of the images.
-
+/// then step back of the real distance given by d = WINDOWWIDTH / (2.0 * (std::f32::consts::FRAC_PI_3 / 2.0).tan())
 use amethyst::prelude::*;
 use amethyst::{core::transform::Transform,
             renderer::{Camera},
@@ -12,7 +10,7 @@ use amethyst::{core::transform::Transform,
 };
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
 
-use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, MAGIC_NUMBER_Z};
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH};
 
 /// TwCamera is the Tower camera component, currently it handling nothing
 /// it's more here as placeholder.
@@ -25,8 +23,9 @@ impl Component for TwCamera {
 /// Init the Entity with different components : TwCamera, Camera, Transform.
 /// Camera size is given by WINDOWWIDTH and WINDOWHEIGHT.
 pub fn initialise_camera(world: &mut World) {
+    let real_size_dist = WINDOWWIDTH / (2.0 * (std::f32::consts::FRAC_PI_3 / 2.0).tan());
     let mut transform = Transform::default();
-    transform.set_translation_xyz(0.0, 0.0, MAGIC_NUMBER_Z);
+    transform.set_translation_xyz(0.0, 0.0, real_size_dist);
     let _cam_entity = world.create_entity()
         .with(TwCamera)
         .with(Camera::standard_3d(WINDOWWIDTH, WINDOWHEIGHT))

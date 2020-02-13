@@ -69,8 +69,8 @@ impl<'s> System<'s> for SceneBoundingBox {
             let _screen_point_top = world_to_screen(camera, world_point_top, diag.clone(), cam_transform ) * window.get_hidpi_factor() as f32;
             let world_point_bottom = Point3::new(bottom_l_point.0, bottom_l_point.1, 0.0);
             let _screen_point_bottom = world_to_screen(camera, world_point_bottom, diag, cam_transform ) * window.get_hidpi_factor() as f32;
-            tw_data.debug_line_start = world_point_bottom.clone();
-            tw_data.debug_line_end = world_point_top.clone();
+//            tw_data.debug_line_start = world_point_bottom.clone();
+//            tw_data.debug_line_end = world_point_top.clone();
         }
         if let Some(active_entity) = tw_in.active_entities.last() {
             let sprite = &sprites.get(*active_entity).unwrap();
