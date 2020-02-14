@@ -45,7 +45,7 @@ build:ubuntu:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
       
 build:windows:
-  image: 'mcr.microsoft.com/windows/nanoserver'
+  image: 'mcr.microsoft.com/windows/nanoserver:1803'
   stage: build
   before_script:
     - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/TEMP/rustup-init.exe }"
