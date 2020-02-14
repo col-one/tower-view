@@ -50,7 +50,7 @@ build:windows:
   script:
     - rustc --version
     - cargo --version
-    - cargo build --release --target x86_64-pc-windows-gnu
+    - cargo build --release
     - tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower
   artifacts:
     paths:
