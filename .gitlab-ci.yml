@@ -50,7 +50,11 @@ build:windows:
   script:
     - rustc --version
     - cargo --version
-    - cargo build --release
+    - cargo build --release --target x86_64-pc-windows-gnu
+    - tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower
+  artifacts:
+    paths:
+      - tower.windows.$CI_COMMIT_SHA.tar.gz
 
 test:centos:
     image: 'centos:7'
