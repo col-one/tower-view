@@ -45,8 +45,11 @@ build:ubuntu:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
       
 build:windows:
-  image: 'tomaka/rust-mingw-docker:latest'
+  image: 'mcr.microsoft.com/windows/servercore:ltsc2019'
   stage: build
+  before_script:
+    - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/TEMP/rustup-init.exe }"
+    - powershell -command "& { C:/TEMP/rustup-init.exe --default-toolchain stable -y }"
   script:
     - rustc --version
     - cargo --version
