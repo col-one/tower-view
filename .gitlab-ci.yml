@@ -45,7 +45,7 @@ build:ubuntu:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
       
 build:windows:
-  image: 'rustops/crates-build-env-windows:latest'
+  image: 'rustops/crates-build-env-windows'
   stage: build
   script:
     - rustc --version
