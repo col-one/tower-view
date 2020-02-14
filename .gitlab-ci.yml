@@ -44,6 +44,14 @@ build:ubuntu:
     paths:
       - tower.ubuntu.$CI_COMMIT_SHA.tar.gz
       
+build:windows:
+  image: 'rustops/crates-build-env-windows:latest'
+  stage: build
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo build --release
+
 test:centos:
     image: 'centos:7'
     stage: test
