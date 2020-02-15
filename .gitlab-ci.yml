@@ -49,8 +49,8 @@ build:windows:
     - windows
   stage: build
   before_script:
-    - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/TEMP/rustup-init.exe }"
-    - powershell -command "& { C:/TEMP/rustup-init.exe --default-toolchain stable -y }"
+    - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/rustup-init.exe }"
+    - powershell -command "& { C:/rustup-init.exe --default-toolchain stable -y }"
   script:
     - rustc --version
     - cargo --version
