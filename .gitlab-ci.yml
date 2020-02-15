@@ -55,7 +55,7 @@ build:windows:
     - rustc --version
     - cargo --version
     - cargo build --release
-    - tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower
+    - powershell -command "& { tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower }"
   artifacts:
     paths:
       - tower.windows.$CI_COMMIT_SHA.tar.gz
