@@ -49,9 +49,9 @@ build:windows:
     - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/rustup-init.exe }"
     - powershell -command "& { C:/rustup-init.exe --default-toolchain stable -y }"
   script:
-    - "%USERPROFILE%\\.cargo\\bin\\rustc --version"
-    - "%USERPROFILE%\\.cargo\\bin\\cargo --version"
-    - "%USERPROFILE%\\.cargo\\bin\\cargo build --release"
+    - "C:\\GitLab-Runner\\builds\\colin-one\\tower\\cargo\\bin\\rustc --version"
+    - "C:\\GitLab-Runner\\builds\\colin-one\\tower\\cargo\\bin\\cargo --version"
+    - "C:\\GitLab-Runner\\builds\\colin-one\\tower\\cargo\\bin\\cargo build --release"
     - powershell -command "& { tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower.exe }"
   artifacts:
     paths:
