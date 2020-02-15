@@ -16,8 +16,6 @@ build:centos7:
   before_script:
     - yum update -y
     - yum install alsa-lib-devel libX11-devel freetype freetype-devel cmake expat expat-devel libxml2-devel python3 python3-libs xcb-util-devel python3-devel python3-pip xcb-util -y
-    # - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
-    # - set PATH=~/.cargo/bin:$PATH
   script:
     - rustc --version
     - cargo --version
@@ -38,7 +36,6 @@ build:ubuntu:
     - rustc --version
     - cargo --version
     - cargo build --release
-    # - chmod +x packaging/centos/install.sh
     - tar -czvf tower.ubuntu.$CI_COMMIT_SHA.tar.gz config -C target/release tower
   artifacts:
     paths:
@@ -52,9 +49,9 @@ build:windows:
     - powershell -command "& { iwr https://win.rustup.rs -OutFile C:/rustup-init.exe }"
     - powershell -command "& { C:/rustup-init.exe --default-toolchain stable -y }"
   script:
-    - %USERPROFILE%\.cargo\bin\rustc --version
-    - %USERPROFILE%\.cargo\bin\cargo --version
-    - %USERPROFILE%\.cargo\bin\cargo build --release
+    - "%USERPROFILE%\.cargo\bin\rustc --version"
+    - "%USERPROFILE%\.cargo\bin\cargo --version"
+    - "%USERPROFILE%\.cargo\bin\cargo build --release"
     - powershell -command "& { tar -czvf tower.windows.$CI_COMMIT_SHA.tar.gz config -C target/release tower }"
   artifacts:
     paths:
