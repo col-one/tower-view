@@ -33,7 +33,7 @@ use std::time::Duration;
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const BACKGROUNDCOLOR2: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
-pub const WINDOWWIDTH: f32 = 1080.0;
+pub const WINDOWWIDTH: f32 = 1024.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
 
 
