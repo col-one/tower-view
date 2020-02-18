@@ -5,12 +5,10 @@
 use amethyst::prelude::*;
 use amethyst::{core::transform::Transform,
             renderer::{Camera, rendy::wsi::winit::{Window}},
-            core::math::{Point2, Point3, Vector2},
-
-};
+            core::math::{Point2, Point3, Vector2}};
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
 
-use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH};
+use crate::tower::{WINDOWHEIGHT, WINDOWWIDTH, TowerData};
 
 /// TwCamera is the Tower camera component, currently it handling nothing
 /// it's more here as placeholder.
@@ -23,12 +21,13 @@ impl Component for TwCamera {
 /// Init the Entity with different components : TwCamera, Camera, Transform.
 /// Camera size is given by WINDOWWIDTH and WINDOWHEIGHT.
 /// real_size_dist as Z position to display images as 100%
-pub fn initialise_camera(world: &mut World) {
+pub fn initialise_camera(world: &mut World, tower_data: &mut TowerData) {
     let height_factor = {
         let screen = world.fetch::<Window>();
         *&screen.get_inner_size().unwrap().height as f32 * *&screen.get_hidpi_factor() as f32
     };
     let real_size_dist = height_factor / (2.0 * (std::f32::consts::FRAC_PI_3 / 2.0).tan());
+    tower_data.real_size_z = real_size_dist;
     let mut transform = Transform::default();
     transform.set_translation_xyz(0.0, 0.0, real_size_dist);
     let _cam_entity = world.create_entity()

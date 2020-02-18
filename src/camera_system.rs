@@ -13,7 +13,7 @@ use std::time::Duration;
 
 use crate::camera::{TwCamera};
 use crate::inputshandler::{TwInputsHandler};
-use crate::tower::{TowerData, WINDOWWIDTH};
+use crate::tower::{TowerData, WINDOWWIDTH, WINDOWHEIGHT};
 
 use std::cmp::max;
 
@@ -170,24 +170,26 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
 
 
 #[derive(SystemDesc)]
-pub struct CameraOrignalScaleSystem;
+pub struct CameraOriginalScaleSystem;
 
-impl<'s> System<'s> for CameraOrignalScaleSystem {
+impl<'s> System<'s> for CameraOriginalScaleSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
                        ReadStorage<'s, Camera>,
-                       WriteStorage<'s, Transform>);
+                       WriteStorage<'s, Transform>,
+                       Read<'s, TowerData>);
     fn run(&mut self, (
         tw_in,
         tw_cameras,
         cameras,
         mut transforms,
+        tw_data
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::S) && tw_in.keys_pressed.len() == 1 {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, _, transform) = (&cameras, &tw_cameras, &mut transforms).join().next().unwrap();
-                let real_size_dist = WINDOWWIDTH / (2.0 * (std::f32::consts::FRAC_PI_3 / 2.0).tan());
-                transform.set_translation_z(real_size_dist);
+                transform.set_translation_z(tw_data.real_size_z);
+                info!("{:?}", tw_data.real_size_z);
             }
         }
     }

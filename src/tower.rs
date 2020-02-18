@@ -33,7 +33,7 @@ use std::time::Duration;
 
 pub const BACKGROUNDCOLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const BACKGROUNDCOLOR2: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
-pub const WINDOWWIDTH: f32 = 1024.0;
+pub const WINDOWWIDTH: f32 = 1280.0;
 pub const WINDOWHEIGHT: f32 = 720.0;
 
 
@@ -49,6 +49,7 @@ pub struct TowerData {
     pub inputs_path: Vec<String>,
     pub debug_line_start: Point3<f32>,
     pub debug_line_end: Point3<f32>,
+    pub real_size_z: f32,
 }
 
 impl Default for TowerData {
@@ -65,6 +66,7 @@ impl Default for TowerData {
             inputs_path: Vec::new(),
             debug_line_start: Point3::new(0.0, 0.0, 0.0),
             debug_line_end: Point3::new(0.0, 0.0, 0.0),
+            real_size_z: 0.0
         }
     }
 }
@@ -75,12 +77,12 @@ pub struct Tower;
 impl<'a> SimpleState for Tower {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        // init camera
-        camera::initialise_camera(world);
-        // command line arguments
-        let opt = Opt::from_args();
         // init tower data
         let mut tower_data = TowerData::default();
+        // init camera
+        camera::initialise_camera(world, &mut tower_data);
+        // command line arguments
+        let opt = Opt::from_args();
         // get file to cache
         tower_data.inputs_path = opt.inputs.iter().map(|input| input.to_owned()).collect::<Vec<_>>();
         if let Some(last_input_path) = tower_data.inputs_path.last() {

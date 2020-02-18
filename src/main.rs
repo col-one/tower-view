@@ -35,7 +35,7 @@ mod placeholder_system;
 
 
 use crate::tower::{Tower, BACKGROUNDCOLOR, BACKGROUNDCOLOR2};
-use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem, CameraOrignalScaleSystem};
+use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem, CameraOriginalScaleSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
                           TwImageNextSystem};
@@ -76,11 +76,11 @@ fn main() -> amethyst::Result<()> {
 //        .with(DebugLinesSystem, "ex", &[])
         // Camera system
         .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &[])
-        .with(CameraKeepRatioSystem, "camera_ratio_system", &["image_active_system"])
+        .with(CameraKeepRatioSystem, "camera_ratio_system", &[])
         .with(CameraZoomNavigationSystem::default(), "camera_zoom_system", &["image_active_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["image_active_system"])
         .with(CameraCenterSystem::default(), "camera_center_system", &["image_active_system"])
-        .with(CameraOrignalScaleSystem, "camera_original_system", &["image_active_system"])
+        .with(CameraOriginalScaleSystem, "camera_original_system", &["image_active_system"])
         // Image system
         .with(TwImageLayoutSystem::default(), "image_layout_system", &["image_active_system"])
         .with(TwImageDeleteSystem, "image_delete_system", &["image_active_system"])
