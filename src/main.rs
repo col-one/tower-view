@@ -9,6 +9,7 @@ use amethyst::{
     core::transform::TransformBundle,
     prelude::*,
     renderer::{
+        rendy::wsi::winit::dpi::LogicalSize,
         palette,
         plugins::{RenderFlat2D, RenderToWindow, RenderDebugLines, RenderSkybox},
         types::DefaultBackend,
@@ -76,7 +77,7 @@ fn main() -> amethyst::Result<()> {
 //        .with(DebugLinesSystem, "ex", &[])
         // Camera system
         .with(CameraTranslateNavigationSystem::default(), "camera_translate_system", &[])
-        .with(CameraKeepRatioSystem, "camera_ratio_system", &[])
+        .with(CameraKeepRatioSystem{previous_size: LogicalSize{width: 0.0, height: 0.0}}, "camera_ratio_system", &[])
         .with(CameraZoomNavigationSystem::default(), "camera_zoom_system", &["image_active_system"])
         .with(CameraFitNavigationSystem, "camera_fit_system", &["image_active_system"])
         .with(CameraCenterSystem::default(), "camera_center_system", &["image_active_system"])

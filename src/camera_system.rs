@@ -1,19 +1,20 @@
+/// camera_system.rs is file where live all the camera system,
+/// every view system related.
 use amethyst::{
     input::{VirtualKeyCode},
     core::{SystemDesc, Transform},
     derive::SystemDesc,
     ecs::{Join, Read, System, SystemData, World, WriteStorage},
     ecs::prelude::*,
-    renderer::rendy::wsi::winit::{Window, dpi::LogicalPosition},
+    renderer::rendy::wsi::winit::{Window, dpi::{LogicalPosition, LogicalSize}},
     renderer::camera::{Camera, Projection, Perspective},
 };
-
 
 use std::time::Duration;
 
 use crate::camera::{TwCamera};
 use crate::inputshandler::{TwInputsHandler};
-use crate::tower::{TowerData, WINDOWWIDTH, WINDOWHEIGHT};
+use crate::tower::{TowerData};
 
 use std::cmp::max;
 
@@ -22,7 +23,9 @@ use std::cmp::max;
 pub struct CameraTranslateNavigationSystem {
     locked_mouse: (f32, f32)
 }
-
+/// Translation camera system with space click and drag
+/// a mouse position history is used to lock the move when the mouse doesn't move while space
+/// key still pressed.
 impl<'s> System<'s> for CameraTranslateNavigationSystem {
     type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
@@ -38,8 +41,9 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
                     break
                 }
                 let dist = tw_in.get_mouse_delta_distance();
-                transform.prepend_translation_x(-(dist.0));
-                transform.prepend_translation_y(dist.1);
+                // TODO: use speed factor as settings
+                transform.prepend_translation_x(-(dist.0) * 1.0);
+                transform.prepend_translation_y(dist.1 * 1.0);
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
@@ -48,8 +52,11 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
 
 
 #[derive(SystemDesc)]
-pub struct CameraKeepRatioSystem;
-
+pub struct CameraKeepRatioSystem {
+    pub previous_size: LogicalSize
+}
+/// Keep tracking when window size changed to create a new camera projection with the new
+/// window width / height ratio and avoid image deformation.
 impl<'s> System<'s> for CameraKeepRatioSystem {
     type SystemData = (WriteStorage<'s, Camera>,
                        ReadExpect<'s, Window>,
@@ -60,11 +67,14 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
         window,
         _tw_in
     ): Self::SystemData) {
-        let window_size = window.get_inner_size().unwrap();
-        let camera = (&mut camera).join().next().unwrap();
-        let persp = Perspective::new((window_size.width / window_size.height) as f32, std::f32::consts::FRAC_PI_3, 0.01, 6000.0);
-        let proj = Projection::Perspective(persp);
-        camera.set_projection(proj);
+        if self.previous_size != window.get_inner_size().unwrap() {
+            let window_size = window.get_inner_size().unwrap();
+            let camera = (&mut camera).join().next().unwrap();
+            let persp = Perspective::new((window_size.width / window_size.height) as f32, std::f32::consts::FRAC_PI_3, 0.01, 6000.0);
+            let proj = Projection::Perspective(persp);
+            camera.set_projection(proj);
+            self.previous_size = window_size;
+        }
     }
 }
 
@@ -73,7 +83,9 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
 pub struct CameraZoomNavigationSystem {
     locked_mouse: (f32, f32),
 }
-
+/// Zoom in/out by set camera Z axis. With Ctrl + click and drag. As camera translation system.
+/// It use the mouse position history to lock the zoom if mouse doesn't move while Ctrl
+/// key still pressed.
 impl<'s> System<'s> for CameraZoomNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, Camera>,
@@ -90,6 +102,7 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
                     return
                 }
                 let dist = tw_in.get_mouse_delta_distance();
+                // TODO: use speed factor as settings
                 transform.prepend_translation_z(dist.1 * 1.2);
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
