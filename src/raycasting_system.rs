@@ -55,7 +55,9 @@ impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
 
 
 #[derive(SystemDesc, Default)]
-pub struct TwImageActiveSystem;
+pub struct TwImageActiveSystem {
+    ui_active: bool
+}
 
 impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
@@ -102,7 +104,10 @@ impl<'s> System<'s> for TwImageActiveSystem {
                         // if active is busy (used by action) or actives empty
                         if !tw_in.active_busy || tw_in.active_entities.is_empty() {
                             tw_actives.insert(entity, TwActiveComponent).expect("Failed to add TwActiveComponent.");
-                            tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveComponent.");
+                            if !self.ui_active {
+                                tw_ui_actives.insert(entity, TwActiveUiComponent).expect("Failed to add TwActiveComponent.");
+                                self.ui_active = true;
+                            }
                             if tw_in.active_entities.len() >= 2 {
                                 tw_in.active_entities.remove(0);
                                 tw_in.active_entities.push(entity);
@@ -129,6 +134,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
             for entity in entities_to_remove {
                 // remove active tw_image component
                 tw_ui_actives.remove(entity).expect("Failed to remove TwActiveUiComponent.");
+                self.ui_active = false;
             }
         }
         // sort active by z if active is not busy, need new active order
