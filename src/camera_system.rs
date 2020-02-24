@@ -115,7 +115,7 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
 pub struct CameraCenterSystem {
     released: bool
 }
-
+/// if double clicked camera and cursor moved to the center.
 impl<'s> System<'s> for CameraCenterSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, Camera>,
@@ -149,7 +149,10 @@ impl<'s> System<'s> for CameraCenterSystem {
 
 #[derive(SystemDesc)]
 pub struct CameraFitNavigationSystem;
-
+/// System that move camera on Z to fit the image size.
+/// F key fit the active image
+/// Shift + F fit the whole images scene, a bounding box is calculated with all image sizes and position
+/// to get the center and maxi size of height or width.
 impl<'s> System<'s> for CameraFitNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
@@ -184,7 +187,7 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
 
 #[derive(SystemDesc)]
 pub struct CameraOriginalScaleSystem;
-
+/// set the camera z to get the real size of image, from TowerData.real_size_z
 impl<'s> System<'s> for CameraOriginalScaleSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,

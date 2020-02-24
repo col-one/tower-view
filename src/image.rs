@@ -1,3 +1,4 @@
+/// image.rs is file that contains all about image and sprite non system function.
 use amethyst::renderer::{
     rendy::texture::TextureBuilder,
     rendy::hal::image::{Kind, ViewKind, Filter, WrapMode, Anisotropic, SamplerInfo, PackedColor},
@@ -14,24 +15,16 @@ use uuid::Uuid;
 use crate::utils::{premultiply_by_alpha, add_alpha_channel};
 
 
-// input path
-pub struct InputComponent {
-    pub path: String,
-}
-
-impl Component for InputComponent {
-    type Storage = VecStorage<Self>;
-}
-
-
-// active ui component
+/// active ui component, special component to get active image that will used by the UI system,
+/// Can be only have one at a time. See ui_system.rs
 pub struct TwActiveUiComponent;
 
 impl Component for TwActiveUiComponent {
     type Storage = VecStorage<Self>;
 }
 
-// active component
+/// active component, component to know which image is active to apply on it the various actions
+/// like move, delete... image
 pub struct TwActiveComponent;
 
 impl Component for TwActiveComponent {
@@ -39,7 +32,8 @@ impl Component for TwActiveComponent {
 }
 
 
-// Component Image
+/// The big component Image, TwImage is the main component of the image element. It store all the image
+/// attributes like size, image path, ratio...
 #[derive(PartialEq, Debug, Clone)]
 pub struct TwImage {
     pub id: Uuid,
@@ -52,6 +46,7 @@ pub struct TwImage {
     pub red: f32,
     pub green: f32,
     pub blue: f32,
+    // useful to keep the offset during move image system, could be have a better place (in the move system ?)
     pub mouse_offset: Option<(f32, f32)>
 }
 
@@ -79,14 +74,10 @@ impl Component for TwImage {
     type Storage = DenseVecStorage<Self>;
 }
 
-// Flag component to track texture loading
 
-
-
-
-
-
-
+/// get the gfx color format from the image crate color type.
+/// Add also the Swizzle to manage the grayscale image.
+/// All this could be change with the support of more complex format image
 pub fn get_color_type(color: &ColorType) -> (Format, format::Swizzle) {
     match color {
         ColorType::RGB(8) => (Format::Rgba8Srgb, format::Swizzle(format::Component::R, format::Component::G, format::Component::B, format::Component::A)),
@@ -96,6 +87,10 @@ pub fn get_color_type(color: &ColorType) -> (Format, format::Swizzle) {
     }
 }
 
+
+/// from an image path, create a full TwImage component and a TextureData component.
+/// TextureData is made directly from the pixel data.
+/// get pixel format and swizzle from get_color_type()
 pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
     let dimensions = img.dimensions();
@@ -109,6 +104,7 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
         .with_data_height(dimensions.1)
         .with_kind(Kind::D2(dimensions.0, dimensions.1, 1, 1))
         .with_view_kind(ViewKind::D2)
+        // TODO: Filter type as settings
         .with_sampler_info(SamplerInfo {
             min_filter: Filter::Nearest,
             mag_filter: Filter::Nearest,
@@ -127,8 +123,4 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
         .with_swizzle(swizzle);
     (TwImage::new(dimensions.0, dimensions.1, name), TextureData(texture_builder))
 }
-
-
-
-
 
