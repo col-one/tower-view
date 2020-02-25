@@ -1,3 +1,6 @@
+/// image_system.rs contains all the image related systems
+/// Most of the systems use TwActiveComponent created and removed by the raytracing system
+/// TwActiveComponent is attached to the active TwImage which the one has the mouse on it
 use amethyst::core::{SystemDesc, Transform};
 use amethyst::derive::SystemDesc;
 use amethyst::input::{VirtualKeyCode};
@@ -19,7 +22,6 @@ use crate::inputshandler::{TwInputsHandler};
 use crate::tower::{TowerData};
 use crate::placeholder::TwPlaceHolder;
 
-
 use std::cmp::Ordering::Equal;
 use std::sync::Arc;
 use std::path::Path;
@@ -31,7 +33,10 @@ use std::ffi::OsString;
 pub struct TwImageMoveSystem {
     click_offset: Option<(f32, f32)>
 }
-
+/// Move the active TwImage, it match the world mouse coord and save the image offset to avoid
+/// the centering of the image under the mouse
+/// self.active_busy is useful to avoid the move of an other image if the mouse enter in
+/// during the move of the current active image
 impl<'s> System<'s> for TwImageMoveSystem {
     type SystemData = (WriteStorage<'s, TwImage>,
                        WriteStorage<'s, Transform>,
@@ -69,7 +74,10 @@ impl<'s> System<'s> for TwImageMoveSystem {
 
 #[derive(SystemDesc, Default)]
 pub struct TwImageLayoutSystem;
-
+/// spread all images as a grid, try to get a square grid as mush as possible.
+/// get the ceil of the sqrt of the images count to defined the size of the grid.
+/// the size of each cell is the max height and max width from all images
+/// An offset is apply between each cell
 impl<'s> System<'s> for TwImageLayoutSystem {
     type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwImage>,
@@ -86,6 +94,7 @@ impl<'s> System<'s> for TwImageLayoutSystem {
         entities
     ): Self::SystemData) {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::L) && tw_in.keys_pressed.len() == 1 {
+            // get the ceil of the sqrt of the images count, to defined the size of the grid
             let twimage_count = tw_images.count() as f32;
             let xy_limit = match twimage_count.sqrt().ceil() {
                 xy_limit if xy_limit < 2.0 => 2.0,
@@ -106,7 +115,7 @@ impl<'s> System<'s> for TwImageLayoutSystem {
             }
             sprite_heights.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
             sprite_widths.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
-
+            // TODO: offset as settings
             let offset = 10.0;
             let mut i = 0;
             for x in 0..xy_limit as usize {

@@ -46,8 +46,6 @@ pub struct TwImage {
     pub red: f32,
     pub green: f32,
     pub blue: f32,
-    // useful to keep the offset during move image system, could be have a better place (in the move system ?)
-    pub mouse_offset: Option<(f32, f32)>
 }
 
 impl  TwImage {
@@ -65,7 +63,6 @@ impl  TwImage {
             red: 1.0,
             green: 1.0,
             blue: 1.0,
-            mouse_offset: None
         }
     }
 }
@@ -91,6 +88,7 @@ pub fn get_color_type(color: &ColorType) -> (Format, format::Swizzle) {
 /// from an image path, create a full TwImage component and a TextureData component.
 /// TextureData is made directly from the pixel data.
 /// get pixel format and swizzle from get_color_type()
+/// could be change with the support of more complex format image
 pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
     let dimensions = img.dimensions();
