@@ -135,7 +135,9 @@ impl<'s> System<'s> for TwImageLayoutSystem {
 
 #[derive(SystemDesc)]
 pub struct TwImageDeleteSystem;
-
+/// delete the active image more precisely the entity
+/// and clean the active_entities vector and also the z_ordered_entities in case of two images
+/// are stack each other.
 impl<'s> System<'s> for TwImageDeleteSystem {
     type SystemData = (WriteExpect<'s, TwInputsHandler>,
                        WriteExpect<'s, TowerData>,
@@ -164,7 +166,10 @@ impl<'s> System<'s> for TwImageDeleteSystem {
 
 #[derive(SystemDesc, Default)]
 pub struct TwImageToFrontSystem;
-
+/// bring the active image as the highest z value. It bring on top of all others.
+/// To keep a consistent z order of the other images, all the images are reordered according to the
+/// new z order.
+/// each z order is multiply by a factor, 0.001
 impl<'s> System<'s> for TwImageToFrontSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
@@ -189,6 +194,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
                     }
                 }
                 let current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
+                // TODO: z factor value as settings
                 transform.set_translation_z(current_index as f32 * 0.001);
             }
         }
@@ -198,7 +204,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
 
 #[derive(SystemDesc)]
 pub struct TwImageApplyBlendingSystem;
-
+/// apply the different channel value, attribute of TwImage, to the associated Tint component
 impl<'s> System<'s> for TwImageApplyBlendingSystem {
     type SystemData = (ReadStorage<'s, TwImage>,
                        WriteStorage<'s, Tint>,);
