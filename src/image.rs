@@ -9,8 +9,12 @@ use amethyst::renderer::{
 use amethyst::ecs::prelude::{Component, DenseVecStorage, VecStorage, };
 use image;
 use image::{GenericImageView, ColorType};
-use std::borrow::Cow;
+
 use uuid::Uuid;
+
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::sync::MutexGuard;
 
 use crate::utils::{premultiply_by_alpha, add_alpha_channel};
 
@@ -120,5 +124,18 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
         .with_raw_data(Cow::Owned(pixels), color_type)
         .with_swizzle(swizzle);
     (TwImage::new(dimensions.0, dimensions.1, name), TextureData(texture_builder))
+}
+
+
+/// function run exclusively inside a new thread, it load the texture data from a path inside the
+/// the tower data cache, TowerData.cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
+pub fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
+    info!("TwImage is loading in cache. {:?}", &path);
+    if !cache.contains_key(&path) {
+        cache.insert(path.clone(), load_texture_from_file(&path));
+        info!("TwImage loaded in cache. {:?}", &path);
+    } else {
+        info!("Already in cache, skipped. {:?}", &path);
+    }
 }
 

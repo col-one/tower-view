@@ -188,6 +188,7 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
 #[derive(SystemDesc)]
 pub struct CameraOriginalScaleSystem;
 /// set the camera z to get the real size of image, from TowerData.real_size_z
+/// With the shortcut s
 impl<'s> System<'s> for CameraOriginalScaleSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
@@ -205,7 +206,6 @@ impl<'s> System<'s> for CameraOriginalScaleSystem {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, _, transform) = (&cameras, &tw_cameras, &mut transforms).join().next().unwrap();
                 transform.set_translation_z(tw_data.real_size_z);
-                info!("{:?}", tw_data.real_size_z);
             }
         }
     }

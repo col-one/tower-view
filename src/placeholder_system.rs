@@ -7,18 +7,14 @@ use amethyst::window::ScreenDimensions;
 
 use amethyst::renderer::{camera::{Camera},
                         sprite::{SpriteSheet},
-                        types::TextureData,
                         Texture,
 };
 use amethyst::assets::{AssetStorage, Loader};
 
-
-use std::thread;
-
-
-use std::sync::{Arc, MutexGuard};
-use std::collections::HashMap;
+use std::sync::Arc;
 use std::path::Path;
+use std::ffi::OsString;
+use std::thread;
 
 use crate::placeholder::{TwPlaceHolder};
 use crate::image::*;
@@ -26,15 +22,6 @@ use crate::tower::{TowerData};
 use crate::inputshandler::TwInputsHandler;
 use crate::utils::is_valid_file;
 use crate::raycasting_system::screen_to_world;
-use std::ffi::OsString;
-
-
-fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
-    info!("TwImage is loading in cache. {:?}", &path);
-    cache.insert(path.clone(), load_texture_from_file(&path));
-//    thread::sleep(Duration::from_secs(5));
-    info!("TwImage loaded in cache. {:?}", &path);
-}
 
 
 #[derive(SystemDesc)]
@@ -69,7 +56,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
             while !tw_data.inputs_path.is_empty() {
                 if let Some(path) = tw_data.inputs_path.pop() {
                     // transfer to cache list for next key
-                    tw_data.file_to_cache.push(OsString::from(&path));
+                    tw_data.file_to_cache.insert(0, OsString::from(&path));
                     path_to_load.push(path);
                 }
             }
@@ -97,10 +84,16 @@ impl<'s> System<'s> for TwImageDroppedSystem {
 }
 
 
-#[derive(SystemDesc)]
-pub struct TwPlaceHolderLoadTwImageSystem;
+#[derive(SystemDesc, Default)]
+pub struct TwCachingImages {
+    // dirty hack to avoid the directory caching to be the first to cache image rather than the
+    // the cache TwHolder, idk yet tw_holder.count is 0 while execution order seems good:
+    // - add inputs to TowerData > dropped system to create holder > TwCachingSystem
+    // I guess is the LazyUpdate from TwImageDroppedSystem which create the un-sync
+    pub ready_to_cache: bool
+}
 
-impl<'s> System<'s> for TwPlaceHolderLoadTwImageSystem {
+impl<'s> System<'s> for TwCachingImages {
     type SystemData = (WriteStorage<'s, TwPlaceHolder>,
                        Entities<'s>,
                        Write<'s, TowerData>,
@@ -108,43 +101,23 @@ impl<'s> System<'s> for TwPlaceHolderLoadTwImageSystem {
     fn run(&mut self, (
         mut tw_holders,
         entities,
-        td,
+        mut td,
     ): Self::SystemData) {
         for (tw_holder, _entity) in (&mut tw_holders, &*entities).join() {
             if tw_holder.to_cache {
                 let cache = Arc::clone(&td.cache);
                 let path = tw_holder.twimage_path.clone();
-                if !cache.lock().unwrap().contains_key(&path) {
-                    thread::spawn(move || {caching_image(cache.lock().unwrap(), path);});
-                } else {
-                    info!("Image already in cache {:?}", path);
-                }
+                thread::spawn(move || {caching_image(cache.lock().unwrap(), path);});
                 tw_holder.to_cache = false;
+                // dirty hack
+                self.ready_to_cache = true;
             }
         }
-    }
-}
-
-
-#[derive(SystemDesc)]
-pub struct TwPlaceHolderCacheSystem;
-
-impl<'s> System<'s> for TwPlaceHolderCacheSystem {
-    type SystemData = (Write<'s, TowerData>,
-                       );
-    fn run(&mut self, (
-        mut td,
-    ): Self::SystemData) {
-        if !td.file_to_cache.is_empty() {
+        if tw_holders.count() == 0 && self.ready_to_cache && !td.file_to_cache.is_empty() {
             let path = td.file_to_cache.pop().unwrap();
             let cache = Arc::clone(&td.cache);
-            if !cache.lock().unwrap().contains_key(path.to_str().unwrap()) {
-                thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
-            } else {
-                info!("Image already in cache {:?}", path);
-            }
+            thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
         }
     }
 }
-
 

@@ -43,7 +43,7 @@ use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteS
 use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderChannelsSystem};
-use crate::placeholder_system::{TwPlaceHolderLoadTwImageSystem, TwPlaceHolderCacheSystem, TwImageDroppedSystem};
+use crate::placeholder_system::{TwCachingImages, TwImageDroppedSystem};
 
 
 /// Entry point of tower program.
@@ -89,11 +89,10 @@ fn main() -> amethyst::Result<()> {
         .with(TwImageToFrontSystem, "image_tofront_system", &["image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["image_active_system"])
         .with(TwImageMoveSystem::default(), "image_move_system", &["image_active_system"])
-        .with(TwPlaceHolderLoadTwImageSystem, "place_holder_system", &[])
-        .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["place_holder_system"])
-        .with(TwImageNextSystem, "image_next_cache", &[])
-        .with(TwPlaceHolderCacheSystem, "images_to_cache", &[])
         .with(TwImageDroppedSystem, "dropped_images", &[])
+        .with(TwCachingImages::default(), "caching_image_system", &["dropped_images"])
+        .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["caching_image_system"])
+        .with(TwImageNextSystem, "image_next_cache", &[])
         .with(TwInputsHandlerScreenToWorldSystem, "convert_screen_to_world", &[])
         // UI
         .with(SliderChannelsSystem{open: false}, "slider_alpha_system", &["image_active_system"])
