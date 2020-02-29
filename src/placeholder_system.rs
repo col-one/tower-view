@@ -1,14 +1,11 @@
 use amethyst::core::{SystemDesc, Transform};
 use amethyst::derive::SystemDesc;
-
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
 use amethyst::ecs::prelude::*;
 use amethyst::window::ScreenDimensions;
-
 use amethyst::renderer::{camera::{Camera},
                         sprite::{SpriteSheet},
-                        Texture,
-};
+                        Texture};
 use amethyst::assets::{AssetStorage, Loader};
 
 use std::sync::Arc;
@@ -20,7 +17,7 @@ use crate::placeholder::{TwPlaceHolder};
 use crate::image::*;
 use crate::tower::{TowerData};
 use crate::inputshandler::TwInputsHandler;
-use crate::utils::is_valid_file;
+use crate::utils::{is_valid_file, list_valid_files};
 use crate::raycasting_system::screen_to_world;
 
 
@@ -48,10 +45,20 @@ impl<'s> System<'s> for TwImageDroppedSystem {
         entities,
         cameras,
         transforms,
-        screen_dimensions
+        screen_dimensions,
     ): Self::SystemData) {
         let mut path_to_load = Vec::new();
-        if let Some(drop_file) = &tw_in.last_dropped_file_path.pop() { path_to_load.push(drop_file.clone()) }
+        if let Some(drop_file) = &tw_in.last_dropped_file_path.pop() {
+            if !tw_data.files_order.contains(&OsString::from(drop_file)) {
+                tw_data.working_dir = Path::new(drop_file).parent().unwrap().as_os_str().to_owned();
+                tw_data.file_to_cache = list_valid_files(&tw_data.working_dir);
+                tw_data.files_order = tw_data.file_to_cache.clone();
+                tw_data.cache.lock().unwrap().clear();
+                info!("New working dir: current cache cleared.")
+            }
+            path_to_load.push(drop_file.clone());
+
+        }
         if !tw_data.inputs_path.is_empty() {
             while !tw_data.inputs_path.is_empty() {
                 if let Some(path) = tw_data.inputs_path.pop() {
