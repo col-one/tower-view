@@ -1,4 +1,4 @@
-# tower
+# TOWER VIEW
 
 Tower is a multi image viewer made with rust and powered by Amethyst.
 The purpose of Tower is to offert a simple, light and perfomant image viewer with
