@@ -181,7 +181,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
         mut transforms,
         entities,
     ): Self::SystemData) {
-        for (_, transform, entity) in (&mut tw_images, &mut transforms, &*entities).join() {
+        for (tw_image, transform, entity) in (&mut tw_images, &mut transforms, &*entities).join() {
             if tw_in.keys_pressed.contains(&VirtualKeyCode::T) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
                 if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                     if let Some(active_entity) = tw_in.active_entities.last() {
@@ -196,7 +196,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
                 let current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
                 // TODO: z factor value as settings
                 transform.set_translation_z(current_index as f32 * 0.001);
-                debug!("TwImage {:?} is bring to front of the other by move its z value. The z_ordered_entities is reorder by the new z value");
+                debug!("TwImage {:?} is bring to front of the other by move its z value. The z_ordered_entities is reorder by the new z value", tw_image);
             }
         }
     }

@@ -70,7 +70,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                 if let Some(path) = tw_data.inputs_path.pop() {
                     // transfer to cache list for next key
                     tw_data.file_to_cache.insert(0, OsString::from(&path));
-                    path_to_load.push(path);
+                    path_to_load.push(path.clone());
                     debug!("Input image {:?} from CLI are sent to file_to_cache", &path);
                 }
             }
@@ -133,8 +133,8 @@ impl<'s> System<'s> for TwCachingImages {
         if tw_holders.count() == 0 && self.ready_to_cache && !td.file_to_cache.is_empty() {
             let path = td.file_to_cache.pop().unwrap();
             let cache = Arc::clone(&td.cache);
-            thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
             debug!("A new thread spawned to load in cache {:?}", &path);
+            thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
         }
     }
 }
