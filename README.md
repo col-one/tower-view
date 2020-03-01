@@ -37,6 +37,6 @@ Major features Tower-0.0.2 :
 Long run festures : 
 * [ ] Support OCIO
 * [ ] Display 3d objects
-* [ ] Add animation timeline
+* [ ] Add timeline
 * [ ] Read images sequences
 * [ ] Read various video format
