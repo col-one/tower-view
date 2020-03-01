@@ -1,4 +1,4 @@
-
+/// contains all the function related to the inputs window
 use amethyst::ecs::prelude::{Entity};
 
 use amethyst::core::{Stopwatch};
@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 
 
-
+/// if match return an Option of the dropped file path
 pub fn get_drop_file(event: &Event) -> Option<String> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -22,6 +22,7 @@ pub fn get_drop_file(event: &Event) -> Option<String> {
     }
 }
 
+/// if match return an option of a mouse screen position
 pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -32,6 +33,7 @@ pub fn get_moved_mouse(event: &Event) -> Option<&LogicalPosition> {
     }
 }
 
+/// match if alt key and mousse pressed, return an option of the mouse button pressed.
 pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -47,6 +49,7 @@ pub fn alt_mouse_pressed(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// match if alt key and mousse released, return an option of the mouse button released.
 pub fn alt_mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -62,6 +65,7 @@ pub fn alt_mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// match if ctrl key and mousse pressed, return an option of the mouse button pressed.
 pub fn ctrl_mouse_pressed(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -77,6 +81,7 @@ pub fn ctrl_mouse_pressed(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// match if ctrl key and mousse released, return an option of the mouse button released.
 pub fn ctrl_mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -92,6 +97,7 @@ pub fn ctrl_mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// return option of the current mouse button pressed
 pub fn mouse_pressed(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -107,6 +113,7 @@ pub fn mouse_pressed(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// return option of the current mouse button released
 pub fn mouse_released(event: &Event) -> Option<MouseButton> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -122,6 +129,7 @@ pub fn mouse_released(event: &Event) -> Option<MouseButton> {
     }
 }
 
+/// return option of the any key code pressed
 pub fn key_pressed(event: &Event) -> Option<VirtualKeyCode> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -135,6 +143,7 @@ pub fn key_pressed(event: &Event) -> Option<VirtualKeyCode> {
     }
 }
 
+/// return option of the any key code released
 pub fn key_released(event: &Event) -> Option<VirtualKeyCode> {
     match *event {
         Event::WindowEvent { ref event, .. } => match event {
@@ -148,6 +157,7 @@ pub fn key_released(event: &Event) -> Option<VirtualKeyCode> {
     }
 }
 
+/// struct that hold all the inputs values, could be better, some member could be part of TowerData
 #[derive(Default)]
 pub struct TwInputsHandler {
     pub stopwatch: Stopwatch,
@@ -172,6 +182,7 @@ pub struct TwInputsHandler {
 }
 
 impl TwInputsHandler {
+    /// get a distance between two mouse frame position
     pub fn get_mouse_delta_distance(&self) -> (f32, f32) {
         let (x, y) = self.mouse_position_history[0];
         let (x2, y2) = self.mouse_position_history[1];

@@ -1,3 +1,4 @@
+/// contains all system related to TwPlaceHolder
 use amethyst::core::{SystemDesc, Transform};
 use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, Read, System, SystemData, World, WriteStorage};
@@ -23,7 +24,12 @@ use crate::raycasting_system::screen_to_world;
 
 #[derive(SystemDesc)]
 pub struct TwImageDroppedSystem;
-
+/// check if TowerData.last_dropped_file is not empty, if not, get the contained path
+/// add it to the list of TwPlaceHolder to create for each path in this list create a new TwPlaceHolder
+/// entity wih transform entity, set with mouse screen to world position.
+/// This handle also the inputs flag CLI path, add them to the list, if a path is not present in
+/// the TowerData.file_orders so it's a new working directory, so we flush the cache and generate a new one
+/// with a new TowerData.file_orders.
 impl<'s> System<'s> for TwImageDroppedSystem {
     type SystemData = (WriteExpect<'s, TwInputsHandler>,
                        Write<'s, LazyUpdate>,
@@ -83,6 +89,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                     .with(position)
                     .with(TwPlaceHolder {from_next: false, twimage_path: path.clone(), to_cache: true })
                     .build();
+                tw_data.file_to_cache.push( OsString::from(&path));
             } else {
                 warn!("Invalid format for {:?}", &path);
             }
@@ -99,7 +106,8 @@ pub struct TwCachingImages {
     // I guess is the LazyUpdate from TwImageDroppedSystem which create the un-sync
     pub ready_to_cache: bool
 }
-
+/// Run a new thread to cache TwImage and TextureData in background then put them in a Arc<Mutex<HashMap>>
+/// Calculate as prio the TwHolderPlace that has .to_cache then all the path present in TowerData.file_to_cache
 impl<'s> System<'s> for TwCachingImages {
     type SystemData = (WriteStorage<'s, TwPlaceHolder>,
                        Entities<'s>,

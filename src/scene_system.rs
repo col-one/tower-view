@@ -1,3 +1,5 @@
+/// contains systems related to all the TwImages, could be merged in image_system...
+/// and related to the scene
 use amethyst::{
     core::{SystemDesc, Transform, math::{Point2, Point3, Vector2}},
     derive::SystemDesc,
@@ -22,7 +24,10 @@ use crate::camera::world_to_screen;
 
 #[derive(SystemDesc, Default)]
 pub struct SceneBoundingBox;
-
+/// Calculate the scene bounding box mean all images coord
+/// also calculate the bbox of the active image
+/// each bbox is converted from world to screen coord
+/// to fit camera correctly
 impl<'s> System<'s> for SceneBoundingBox {
     type SystemData = (Write<'s, TowerData>,
                        ReadStorage<'s, Transform>,
@@ -46,10 +51,7 @@ impl<'s> System<'s> for SceneBoundingBox {
         let _count = (&twimages, &transforms).join().count();
         let mut points = Vec::new();
         let mut active_points = Vec::new();
-
         let (camera, cam_transform) = (&cameras, &transforms).join().next().unwrap();
-
-
         for (sprite, _twimage, transform) in (&sprites, &twimages, &transforms).join() {
             let sprite_sheet = sprite_sheet.get(&sprite.sprite_sheet).unwrap();
             let sprite = &sprite_sheet.sprites[sprite.sprite_number];
@@ -94,7 +96,7 @@ impl<'s> System<'s> for SceneBoundingBox {
 
 #[derive(SystemDesc)]
 pub struct DebugLinesSystem;
-
+/// draw GL line from TowerData.debug_line_start and TowerData.debug_line_end.
 impl<'s> System<'s> for DebugLinesSystem {
     type SystemData = (
         Write<'s, DebugLines>, // Request DebugLines resource
@@ -109,3 +111,4 @@ impl<'s> System<'s> for DebugLinesSystem {
         );
     }
 }
+

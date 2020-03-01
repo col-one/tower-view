@@ -10,7 +10,7 @@ static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr"
 
 pub fn is_valid_file(file: &Path) -> bool {
    file.extension().map_or(false, |ext| {
-        IMAGE_FORMATS.iter().any(|f| OsStr::new(f) == ext)
+        IMAGE_FORMATS.iter().any(|f| *f == &ext.to_str().unwrap().to_lowercase())
     })
 }
 

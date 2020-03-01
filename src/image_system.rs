@@ -24,9 +24,7 @@ use crate::placeholder::TwPlaceHolder;
 
 use std::cmp::Ordering::Equal;
 use std::sync::Arc;
-use std::path::Path;
 use std::ffi::OsString;
-
 
 
 #[derive(SystemDesc, Default)]
@@ -224,7 +222,9 @@ impl<'s> System<'s> for TwImageApplyBlendingSystem {
 
 #[derive(SystemDesc)]
 pub struct TwImageLoadFromCacheSystem;
-
+/// create TwImage from the TowerData cache. For each TwPlaceHolder TextureData and TwImage is retrieve
+/// from cache, then sprite and transform is created
+/// then the entity's PlaceHolder is deleted
 impl<'s> System<'s> for TwImageLoadFromCacheSystem {
     type SystemData = (WriteStorage<'s, TwImage>,
                        WriteStorage<'s, TwPlaceHolder>,
@@ -299,9 +299,6 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                         entities.delete(entity).expect("Failed to delete entity.");
                         tw_in.z_ordered_entities.clear();
                         tw_in.active_entities.clear();
-                        // set working dir
-                        let tw_image_path = tw_image.file_name.clone();
-                        tw_data.working_dir = Path::new(&tw_image_path).parent().unwrap().as_os_str().to_owned()
                     }
                 }
             }
@@ -311,7 +308,11 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
 
 #[derive(SystemDesc)]
 pub struct TwImageNextSystem;
-
+/// when arrows key are pushed, the current entity's TwImage is deleted and a new TwPlaceHolder
+/// is built. The TwPlaceHolder image path is retrieve from the TowerData.files_order vec this path
+/// is send to th cache list too.
+/// Right arrow get next image
+/// Left arrow get previous image
 impl<'s> System<'s> for TwImageNextSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, TwImage>,

@@ -1,3 +1,4 @@
+/// contains all UI related system, use ImGui as GUI lib
 use amethyst::ecs::{Join, WriteStorage};
 use amethyst::ecs::prelude::*;
 use amethyst_imgui::{
@@ -17,7 +18,8 @@ pub const UI_WIDTH: f32 = 300.0;
 pub struct SliderChannelsSystem {
 	pub open: bool,
 }
-
+/// generate a window with four sliders, one by channel, for the active image.
+/// Window is keep open while escape key is not pushed
 impl<'s> amethyst::ecs::System<'s> for SliderChannelsSystem {
 	type SystemData = (ReadExpect<'s, TwInputsHandler>,
 	                   ReadStorage<'s, TwActiveUiComponent>,

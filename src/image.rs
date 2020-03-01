@@ -129,6 +129,7 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
 
 /// function run exclusively inside a new thread, it load the texture data from a path inside the
 /// the tower data cache, TowerData.cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
+/// if path TwImage is already presendt in the hashmap it skipped
 pub fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
     info!("TwImage is loading in cache. {:?}", &path);
     if !cache.contains_key(&path) {

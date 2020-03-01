@@ -1,3 +1,4 @@
+/// contains functions and system related to "raycasting" mouse image intersection.
 use amethyst::{
         assets::{AssetStorage},
         renderer::{
@@ -17,6 +18,7 @@ use std::cmp::Ordering::Equal;
 use crate::inputshandler::{TwInputsHandler};
 use crate::image::{TwImage, TwActiveUiComponent, TwActiveComponent};
 
+/// Utility function which convert screen position to world position coord with a 0 z intersect plane
 pub fn screen_to_world(mouse_position: (f32, f32), camera: &Camera, transform: &Transform, screen_dimensions: &ScreenDimensions) -> Point3<f32>{
     let ray = camera.projection().screen_ray(
         Point2::new(mouse_position.0, mouse_position.1),
@@ -30,7 +32,8 @@ pub fn screen_to_world(mouse_position: (f32, f32), camera: &Camera, transform: &
 
 #[derive(SystemDesc)]
 pub struct TwInputsHandlerScreenToWorldSystem;
-
+/// system which convert screen to world TowerData.mouse_position and set the member the return to
+/// TowerData.mouse_world_position
 impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
     type SystemData = (
         ReadStorage<'s, Transform>,
@@ -58,7 +61,11 @@ impl<'s> System<'s> for TwInputsHandlerScreenToWorldSystem {
 pub struct TwImageActiveSystem {
     ui_active: bool
 }
-
+/// system which manage that TwImages are active or not, it also sort in a TwInputsHandler the images
+/// by z position to get their orders and set their z transform value
+/// An active TwImage get an new TwActiveComponent and a TwActiveUIComponent
+/// TwActiveUIComponent is deleted when Escape is pressed while TwActiveComponent is deleted when
+/// mouse is outside of the image.
 impl<'s> System<'s> for TwImageActiveSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        WriteStorage<'s, TwImage>,
