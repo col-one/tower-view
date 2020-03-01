@@ -112,7 +112,7 @@ impl<'a> SimpleState for Tower {
             // drop file event
             if let Some(drop_file) = get_drop_file(&event) {
                 {
-                    info!("{:?}", drop_file);
+                    info!("File dropped {:?}", drop_file);
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.last_dropped_file_path.push(drop_file);
                 }
@@ -138,6 +138,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.alt_mouse_button_pressed = Some(button);
+                    debug!("Alt+Click pressed");
                 }
             }
             // alt mouse release
@@ -145,6 +146,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.alt_mouse_button_pressed = None;
+                    debug!("Alt+Click released");
                 }
             }
             // ctrl mouse pressed event
@@ -153,6 +155,7 @@ impl<'a> SimpleState for Tower {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.ctrl_mouse_button_pressed = Some(button);
                     tw_in.mouse_world_clicked_position = tw_in.mouse_world_position;
+                    debug!("Ctrl+Click pressed");
                 }
             }
             // ctrl mouse release
@@ -160,6 +163,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.ctrl_mouse_button_pressed = None;
+                    debug!("Ctrl+Click released");
                 }
             }
             // mouse pressed event
@@ -170,6 +174,9 @@ impl<'a> SimpleState for Tower {
                     tw_in.mouse_world_clicked_position = tw_in.mouse_world_position;
                     if Duration::from_millis(300) >= tw_in.double_click_stopwatch.elapsed() {
                         tw_in.mouse_double_clicked = Some(button);
+                        debug!("Mouse double clicked");
+                    } else {
+                        debug!("Mouse clicked");
                     }
                     tw_in.double_click_stopwatch.restart();
                 }
@@ -183,6 +190,7 @@ impl<'a> SimpleState for Tower {
                     tw_in.ctrl_mouse_button_pressed = None;
                     tw_in.mouse_world_clicked_position = None;
                     tw_in.mouse_double_clicked = None;
+                    debug!("Mouse click released");
                 }
             }
             // keyboard pressed
@@ -190,6 +198,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.keys_pressed.push(key_code);
+                    debug!("Key pressed {:?}", key_code);
                 }
             }
             // keyboard released
@@ -197,6 +206,7 @@ impl<'a> SimpleState for Tower {
                 {
                     let mut tw_in = data.world.fetch_mut::<TwInputsHandler>();
                     tw_in.keys_pressed.retain(|x| *x != key_code);
+                    debug!("Key released {:?}", key_code);
                 }
             }
         }

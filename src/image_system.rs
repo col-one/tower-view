@@ -59,6 +59,7 @@ impl<'s> System<'s> for TwImageMoveSystem {
                         let trans = transforms.get_mut(*top_active_entity).unwrap();
                         trans.set_translation_x(world_pos.0 + offset.0);
                         trans.set_translation_y(world_pos.1 + offset.1);
+                        debug!("Image is moved of {:?}", (world_pos.0 + offset.0, world_pos.1 + offset.1));
                     }
                 }
             }
@@ -126,6 +127,7 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                     i += 1;
                 }
             }
+            debug!("Images are layout as an atlas with an offset of {:?}", offset);
         }
     }
 }
@@ -148,7 +150,7 @@ impl<'s> System<'s> for TwImageDeleteSystem {
         if tw_in.keys_pressed.contains(&VirtualKeyCode::Delete) && tw_in.keys_pressed.len() == 1 {
             if time::Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 if let Some(active_entity) = tw_in.active_entities.last() {
-                    info!("TwImage is deleting, {:?}", active_entity);
+                    debug!("TwImage is deleting, {:?}", active_entity);
                     entities.delete(*active_entity).expect("Fail error to delete entity");
                     // clean entities copies in tw_in and tw_data
                     tw_in.active_entities.clear();
@@ -194,6 +196,7 @@ impl<'s> System<'s> for TwImageToFrontSystem {
                 let current_index = tw_in.z_ordered_entities.iter().position(|e| e == &entity).unwrap();
                 // TODO: z factor value as settings
                 transform.set_translation_z(current_index as f32 * 0.001);
+                debug!("TwImage {:?} is bring to front of the other by move its z value. The z_ordered_entities is reorder by the new z value");
             }
         }
     }
@@ -299,6 +302,7 @@ impl<'s> System<'s> for TwImageLoadFromCacheSystem {
                         entities.delete(entity).expect("Failed to delete entity.");
                         tw_in.z_ordered_entities.clear();
                         tw_in.active_entities.clear();
+                        debug!("TwPlaceHolder is replaced by the TwImage from cache.")
                     }
                 }
             }
@@ -335,7 +339,7 @@ impl<'s> System<'s> for TwImageNextSystem {
                         index += 1;
                         if index < tower_data.files_order.len() as i16 {
                             let new_path = tower_data.files_order[index as usize].clone();
-                            info!("{:?}", new_path);
+                            debug!("Next TwImage is loading {:?}", new_path);
                             world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }
@@ -353,7 +357,7 @@ impl<'s> System<'s> for TwImageNextSystem {
                         index -= 1;
                         if index >= 0 {
                             let new_path = tower_data.files_order[index as usize].clone();
-                            info!("{:?}", new_path);
+                            debug!("Next TwImage is loading {:?}", new_path);
                             world.insert(*active_entity, TwPlaceHolder { from_next: true, to_cache: true, twimage_path: new_path.to_str().unwrap().to_owned() });
                             tower_data.file_to_cache.push(new_path);
                         }

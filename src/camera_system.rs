@@ -42,8 +42,11 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
                 }
                 let dist = tw_in.get_mouse_delta_distance();
                 // TODO: use speed factor as settings
-                transform.prepend_translation_x(-(dist.0) * 1.0);
-                transform.prepend_translation_y(dist.1 * 1.0);
+                let delta_dist_x = (dist.0) * 1.0;
+                let delta_dist_y = (dist.1) * 1.0;
+                transform.prepend_translation_x(-delta_dist_x);
+                transform.prepend_translation_y(delta_dist_y);
+                debug!("Camera moved of {:?}", (delta_dist_x, delta_dist_y));
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
@@ -136,6 +139,7 @@ impl<'s> System<'s> for CameraCenterSystem {
                     if let Some(mouse_world_click) = tw_in.mouse_world_clicked_position {
                         transform.set_translation_x(mouse_world_click.0);
                         transform.set_translation_y(mouse_world_click.1);
+                        debug!("Camera moved to {:?} and cursor moved to window center.", (mouse_world_click.0, mouse_world_click.1));
                     }
                 }
                 self.released = true;
@@ -171,6 +175,7 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
                 transform.set_translation_x((tw_data.active_rect.min.x + tw_data.active_rect.max.x) / 2.0);
                 transform.set_translation_y((tw_data.active_rect.min.y + tw_data.active_rect.max.y) / 2.0);
                 transform.set_translation_z(max(tw_data.active_rect.height() as i32, tw_data.active_rect.width() as i32) as f32);
+                debug!("Camera is moved with {:?} to fit the active image", transform);
             }
         }
         if tw_in.keys_pressed.contains(&VirtualKeyCode::F) && tw_in.keys_pressed.contains(&VirtualKeyCode::LShift) && tw_in.keys_pressed.len() == 2 {
@@ -179,6 +184,7 @@ impl<'s> System<'s> for CameraFitNavigationSystem {
                 transform.set_translation_x(tw_data.scene_middle_point.x);
                 transform.set_translation_y(tw_data.scene_middle_point.y);
                 transform.set_translation_z(max(tw_data.scene_rect.height() as i32, tw_data.scene_rect.width() as i32) as f32);
+                debug!("Camera is moved with {:?} to fit the whole images scene", transform);
             }
         }
     }
@@ -206,6 +212,7 @@ impl<'s> System<'s> for CameraOriginalScaleSystem {
             if Duration::from_millis(500) <= tw_in.stopwatch.elapsed() {
                 let (_, _, transform) = (&cameras, &tw_cameras, &mut transforms).join().next().unwrap();
                 transform.set_translation_z(tw_data.real_size_z);
+                debug!("Camera z transform is set to {:?} to fit the real image size", tw_data.real_size_z);
             }
         }
     }

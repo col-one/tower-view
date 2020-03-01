@@ -71,6 +71,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                     // transfer to cache list for next key
                     tw_data.file_to_cache.insert(0, OsString::from(&path));
                     path_to_load.push(path);
+                    debug!("Input image {:?} from CLI are sent to file_to_cache", &path);
                 }
             }
         }
@@ -90,6 +91,7 @@ impl<'s> System<'s> for TwImageDroppedSystem {
                     .with(TwPlaceHolder {from_next: false, twimage_path: path.clone(), to_cache: true })
                     .build();
                 tw_data.file_to_cache.push( OsString::from(&path));
+                debug!("TwPlaceHolder is created for path {:?}", &path);
             } else {
                 warn!("Invalid format for {:?}", &path);
             }
@@ -132,6 +134,7 @@ impl<'s> System<'s> for TwCachingImages {
             let path = td.file_to_cache.pop().unwrap();
             let cache = Arc::clone(&td.cache);
             thread::spawn(move || {caching_image(cache.lock().unwrap(), path.to_str().unwrap().to_owned());});
+            debug!("A new thread spawned to load in cache {:?}", &path);
         }
     }
 }

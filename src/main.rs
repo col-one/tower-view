@@ -56,9 +56,10 @@ fn main() -> amethyst::Result<()> {
     Builder::new()
     .format(|buf, record| {
         writeln!(buf,
-            "{} [{}] - {}",
+            "{} [{} {}] - {}",
             Local::now().format("%Y-%m-%dT%H:%M:%S"),
             record.level(),
+            record.module_path().unwrap(),
             record.args()
         )
     })

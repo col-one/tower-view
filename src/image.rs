@@ -97,6 +97,7 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
     let img = image::open(name).unwrap();
     let dimensions = img.dimensions();
     let (color_type, swizzle) = get_color_type(&img.color());
+    debug!("Image color format is {:?} and after conversion {:?}", color_type, &img.color());
     let pixels = match &img.color() {
         ColorType::RGBA(8) => premultiply_by_alpha(&img.raw_pixels()),
         ColorType::RGB(8) => add_alpha_channel(&img.raw_pixels()),
@@ -123,6 +124,7 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
             })
         .with_raw_data(Cow::Owned(pixels), color_type)
         .with_swizzle(swizzle);
+    debug!("TwImage and TextureData created");
     (TwImage::new(dimensions.0, dimensions.1, name), TextureData(texture_builder))
 }
 
@@ -131,12 +133,12 @@ pub fn load_texture_from_file (name: &str) ->  (TwImage, TextureData) {
 /// the tower data cache, TowerData.cache: Arc<Mutex<HashMap<String, (TwImage, TextureData)>>>,
 /// if path TwImage is already presendt in the hashmap it skipped
 pub fn caching_image(mut cache: MutexGuard<'_, HashMap<String, (TwImage, TextureData)>>, path: String) {
-    info!("TwImage is loading in cache. {:?}", &path);
+    debug!("TwImage is loading in cache. {:?}", &path);
     if !cache.contains_key(&path) {
         cache.insert(path.clone(), load_texture_from_file(&path));
-        info!("TwImage loaded in cache. {:?}", &path);
+        debug!("TwImage loaded in cache. {:?}", &path);
     } else {
-        info!("Already in cache, skipped. {:?}", &path);
+        debug!("Already in cache, skipped. {:?}", &path);
     }
 }
 

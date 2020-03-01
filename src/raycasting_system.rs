@@ -123,7 +123,7 @@ impl<'s> System<'s> for TwImageActiveSystem {
                             }
                         }
                     } else {
-                        if let Some(_ok) = tw_actives.remove(entity) { info!("remove active twimage") };
+                        if let Some(_ok) = tw_actives.remove(entity) { debug!("Mouse cursor is outside the image, Remove TwActiveComponent") };
                         if let Some(id) = tw_in.active_entities.iter().position(|i| i == &entity) {
                             tw_in.active_entities.remove(id);
                         }
