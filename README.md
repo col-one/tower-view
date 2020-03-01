@@ -11,7 +11,7 @@ Features Tower-0.0.1 :
 * [x] Display several images as same time
 * [x] Move the active image with alt + drag
 * [x] Arrange the images as atlas on the board with key l
-* [x] Delete the active image of the view board with key del
+* [x] Delete the active image from the view board with key del
 * [x] Bring the active image to front, on top of each other with key shift + t
 * [x] Adjust channels values with shift + c
 * [x] Change active image to the next one present in the current directory with arrow key letf / right
