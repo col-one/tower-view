@@ -31,7 +31,7 @@ Major features Tower-0.0.2 :
 * [ ] Support OpenExr format
 * [ ] Create a tower file format, to save the tower scene
 * [ ] Create a file settings
-* [ ] Better performaance managing
+* [ ] Better performance managing
 
 
 Long run festures : 
