@@ -21,6 +21,7 @@ use crate::utils::{premultiply_by_alpha, add_alpha_channel};
 
 /// active ui component, special component to get active image that will used by the UI system,
 /// Can be only have one at a time. See ui_system.rs
+#[derive(PartialEq, Debug, Clone)]
 pub struct TwActiveUiComponent;
 
 impl Component for TwActiveUiComponent {
@@ -29,6 +30,7 @@ impl Component for TwActiveUiComponent {
 
 /// active component, component to know which image is active to apply on it the various actions
 /// like move, delete... image
+#[derive(PartialEq, Debug, Clone)]
 pub struct TwActiveComponent;
 
 impl Component for TwActiveComponent {

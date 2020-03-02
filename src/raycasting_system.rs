@@ -86,6 +86,10 @@ impl<'s> System<'s> for TwImageActiveSystem {
         entities
     ): Self::SystemData) {
         let mut remove_active = false;
+        // as there is no TwActiveComponent, ui_active switch to false
+        if tw_ui_actives.is_empty() {
+            self.ui_active = false;
+        }
         for (sprite, transform, _tw_image, entity) in (&sprites, &transforms, &mut tw_images, &*entities).join() {
             if let Some(sprite_sheet) = sprite_sheets.get(&sprite.sprite_sheet) {
                 let sprite = &sprite_sheet.sprites[sprite.sprite_number];
