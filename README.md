@@ -40,3 +40,17 @@ Long run festures :
 * [ ] Add timeline
 * [ ] Read images sequences
 * [ ] Read various video format
+
+### Build tower from source : 
+After installed correctly rust, https://www.rust-lang.org/tools/install
+```
+git clone https://gitlab.com/colin-one/tower.git
+cd tower
+cargo build --release
+```
+Run tower from target directory 
+```
+target/release/tower some_image_paths
+```
+
+
