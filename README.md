@@ -1,3 +1,5 @@
+[![Lines of Code](https://tokei.rs/b1/github/col-one/tower-view?category=code)](https://github.com/col-one/tower-view)
+
 # TOWER VIEW
 
 Tower View is a multi image viewer made with rust and powered by Amethyst.
