@@ -46,7 +46,7 @@ Long run festures :
 ### Build tower from source : 
 After installed correctly rust, https://www.rust-lang.org/tools/install
 ```
-git clone https://gitlab.com/colin-one/tower.git
+git clone https://github.com/col-one/tower-view.git
 cd tower
 cargo build --release
 ```
