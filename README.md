@@ -56,3 +56,16 @@ target/release/tower some_image_paths
 ```
 
 
+
+## Basic manipulation
+There is no "selection" concept with TowerView but an "active" concept, **the active image is the first image under the mouse cursor.**
+
+- `drag and drop` an image file to add it the scene:
+- `ctrl + click drag` to zoom in/out:
+- `space + click drag` to pan the view:
+- `f key` to focus the view on the active image:
+- `shift + f key` to focus the view on the whole set of images:
+- `s key` to set the view at 100%, the real size of images:
+- `del key` to delete the active image:
+
+
