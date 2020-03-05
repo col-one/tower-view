@@ -38,7 +38,7 @@ Major features Tower-0.0.2 :
 * [ ] Better performance managing
 
 
-Long run festures : 
+Long run features : 
 * [ ] Support OCIO
 * [ ] Display 3d objects
 * [ ] Add timeline
