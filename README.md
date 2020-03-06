@@ -1,4 +1,3 @@
-[![Lines of Code](https://tokei.rs/b1/github/col-one/tower-view?category=code)](https://github.com/col-one/tower-view)
 
 # TOWER VIEW
 
@@ -7,6 +6,11 @@ The purpose of Tower is to offert a simple, light and perfomant image viewer wit
 a bunch of features adapted to the CG world and digital creation.
 
 Tower-0.0.1 is perfect to show casing your texture maps or compare and reviewing images.
+
+
+[<img src="wiki/images/tower.jpeg" width="450"/>](wiki/images/tower.jpeg)
+
+
 
 Features Tower-0.0.1 : 
 
