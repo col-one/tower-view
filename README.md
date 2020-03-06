@@ -69,5 +69,12 @@ There is no "selection" concept with TowerView but an "active" concept, **the ac
 - `shift + f key` to focus the view on the whole set of images: [gif](wiki/images/tower-shift-focus.gif)
 - `s key` to set the view at 100%, the real size of images: [gif](wiki/images/tower-100.gif)
 - `del key` to delete the active image: [gif](wiki/images/tower-del.gif)
+- `key l` to layout images as a grid atlas: [gif](wiki/images/tower-atlas.gif)
+- `double click` to center view at cursor position: [gif](wiki/images/tower-center.gif)
+- `alt + click drag` to move the active image: [gif](wiki/images/tower-move.gif)
+- `shift + t key` to bring the active image on top of all others: [gif](wiki/images/tower-top.gif)
+- `arrow left / right key` to display the next / previous image of the active image: [gif](wiki/images/tower-next.gif)
+- `shift + c` to display channels factor:
+
 
 
