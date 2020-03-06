@@ -65,9 +65,9 @@ There is no "selection" concept with TowerView but an "active" concept, **the ac
 - `drag and drop` one or several images file to add it the scene: [gif1](wiki/images/tower-drag-one.gif) [gif2](wiki/images/tower-drag-several.gif)
 - `ctrl + click drag` to zoom in/out: [gif](wiki/images/tower-zoom.gif)
 - `space + click drag` to pan the view: [gif](wiki/images/tower-pan-view.gif)
-- `f key` to focus the view on the active image:
-- `shift + f key` to focus the view on the whole set of images:
-- `s key` to set the view at 100%, the real size of images:
-- `del key` to delete the active image:
+- `f key` to focus the view on the active image: [gif](wiki/images/tower-focus.gif)
+- `shift + f key` to focus the view on the whole set of images: [gif](wiki/images/tower-shift-focus.gif)
+- `s key` to set the view at 100%, the real size of images: [gif](wiki/images/tower-100.gif)
+- `del key` to delete the active image: [gif](wiki/images/tower-del.gif)
 
 
