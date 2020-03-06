@@ -51,6 +51,7 @@ Long run features :
 * [ ] Read various video format
 
 ### Build tower from source : 
+If you don't want to build from source you can download the binaries https://github.com/col-one/tower-view/releases
 After installed correctly rust, https://www.rust-lang.org/tools/install
 ```
 git clone https://github.com/col-one/tower-view.git
