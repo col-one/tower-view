@@ -63,7 +63,8 @@ target/release/tower some_image_paths
 There is no "selection" concept with TowerView but an "active" concept, **the active image is the first image under the mouse cursor.**
 
 - `drag and drop` an image file to add it the scene:
-![](wiki/images/tower-drag-one.gif&s=100 =250x)
+
+[<img src="wiki/images/tower-drag-one.gif" width="250"/>](wiki/images/tower-drag-one.gif)
 - `ctrl + click drag` to zoom in/out:
 - `space + click drag` to pan the view:
 - `f key` to focus the view on the active image:
