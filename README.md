@@ -33,7 +33,7 @@ Features Tower-0.0.1 :
 * [x] Camera fit the real image size with key s
 
 
-Major features Tower-0.0.2 : 
+Major features Tower-0.1.0 : 
 
 * [ ] Display 16f and 32f images
 * [ ] Support OpenExr format
