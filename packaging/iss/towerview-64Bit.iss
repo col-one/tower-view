@@ -2,7 +2,7 @@
 
 #define MyAppName "towerview"
 #define MyAppVersion "0.0.1"
-
+#define TEMP GetEnv('TEMP')
 
 [Setup]
 AppName={#MyAppName}
@@ -13,7 +13,7 @@ DefaultGroupName=TowerView
 UninstallDisplayIcon={app}\uninstall.exe
 Compression=lzma2
 SolidCompression=yes
-OutputDir=C:\Users\Administrator
+OutputDir={#TEMP}
 OutputBaseFilename={#MyAppName}-{#MyAppVersion}-x64
 ; "ArchitecturesAllowed=x64" specifies that Setup cannot run on
 ; anything but x64.
@@ -37,7 +37,7 @@ Root: HKLM; SubKey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
     GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "addtopath"; Description: "Add to PATH environment variable"; \
-    GroupDescription: "Settings"; Flags: checked
+    GroupDescription: "Settings"
 
 [Icons]
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks: "desktopicon"
