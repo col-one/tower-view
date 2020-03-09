@@ -2,7 +2,7 @@
 name = "tower"
 version = "0.0.1"
 authors = ["Colone"]
-edition = "2020"
+edition = "2018"
 license = "AGPL"
 description = "Tower View is a multi image viewer made with rust and powered by Amethyst."
 
