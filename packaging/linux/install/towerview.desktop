@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=0.0.1
+Name=TowerView
+Exec=/opt/TowerView/towerview %F
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Graphics;
