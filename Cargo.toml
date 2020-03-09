@@ -1,5 +1,5 @@
 [package]
-name = "tower"
+name = "towerview"
 version = "0.0.1"
 authors = ["Colone"]
 edition = "2018"
