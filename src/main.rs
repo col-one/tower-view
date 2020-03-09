@@ -63,7 +63,7 @@ fn main() -> amethyst::Result<()> {
             record.args()
         )
     })
-    .filter(None, LevelFilter::Debug)
+    .filter(None, LevelFilter::Info)
     .init();
     
     amethyst::start_logger(Default::default());

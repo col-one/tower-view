@@ -21,7 +21,7 @@ version = "0.6.0"
 
 [dependencies.amethyst]
 version = "0.13"
-features = ["vulkan"]
+features = ["vulkan", "no-slow-safety-checks"]
 
 
 [package.metadata.rpm.cargo]
