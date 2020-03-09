@@ -15,7 +15,7 @@ Tower-0.0.1 is perfect to show casing your texture maps or compare and reviewing
 Features Tower-0.0.1 : 
 
 * [x] Load images from CLI `tower <image_path>...`
-* [x] Display 8bit images
+* [x] Display 8bit and 16bit images
 * [x] Display several images as same time
 * [x] Move the active image with alt + drag
 * [x] Arrange the images as atlas on the board with key l
