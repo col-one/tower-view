@@ -8,7 +8,8 @@ a bunch of features adapted to the CG world and digital creation.
 Tower View 0.0.1 is perfect to show casing your texture maps or compare images.
 
 
-[<img src="wiki/images/tower.jpeg" width="450"/>](wiki/images/tower.jpeg)
+[<img src="wiki/images/tower.jpeg" width="450"/>](wiki/images/tower.jpeg) [<img src="wiki/images/tower-grid.png" width="400"/>](wiki/images/tower-grid.png)
+
 
 
 
