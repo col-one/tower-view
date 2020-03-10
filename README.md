@@ -13,7 +13,7 @@ Tower View 0.0.1 is perfect to show casing your texture maps or compare images.
 
 
 
-Features Tower-0.0.1 : 
+Features TowerView-0.0.1 : 
 
 * [x] Load images from CLI `tower <image_path>...`
 * [x] Display 8bit and 16bit images
@@ -34,7 +34,7 @@ Features Tower-0.0.1 :
 * [x] Camera fit the real image size with key s
 
 
-Major features Tower-0.1.0 : 
+Major features TowerView-0.1.0 : 
 
 * [ ] Display 16f and 32f images
 * [ ] Support OpenExr format
