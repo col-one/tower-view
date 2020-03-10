@@ -5,7 +5,7 @@ Tower View is a multi image viewer made with rust and powered by Amethyst.
 The purpose of Tower is to offert a simple, light and perfomant image viewer with
 a bunch of features adapted to the CG world and digital creation.
 
-Tower-0.0.1 is perfect to show casing your texture maps or compare and reviewing images.
+Tower-0.0.1 is perfect to show casing your texture maps or compare images.
 
 
 [<img src="wiki/images/tower.jpeg" width="450"/>](wiki/images/tower.jpeg)
