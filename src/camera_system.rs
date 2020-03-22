@@ -26,6 +26,7 @@ pub struct CameraTranslateNavigationSystem {
 /// Translation camera system with space click and drag
 /// a mouse position history is used to lock the move when the mouse doesn't move while space
 /// key still pressed.
+/// To keep a smooth translating depending on "zoom" the speed is multiply by the cam.z * 0.003
 impl<'s> System<'s> for CameraTranslateNavigationSystem {
     type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
@@ -42,8 +43,8 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
                 }
                 let dist = tw_in.get_mouse_delta_distance();
                 // TODO: use speed factor as settings
-                let delta_dist_x = (dist.0) * 1.0;
-                let delta_dist_y = (dist.1) * 1.0;
+                let delta_dist_x = (dist.0) * ((transform.translation().z * 0.003) * 0.4);
+                let delta_dist_y = (dist.1) * ((transform.translation().z * 0.003) * 0.4);
                 transform.prepend_translation_x(-delta_dist_x);
                 transform.prepend_translation_y(delta_dist_y);
                 debug!("Camera moved of {:?}", (delta_dist_x, delta_dist_y));
@@ -73,7 +74,10 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
         if self.previous_size != window.get_inner_size().unwrap() {
             let window_size = window.get_inner_size().unwrap();
             let camera = (&mut camera).join().next().unwrap();
-            let persp = Perspective::new((window_size.width / window_size.height) as f32, std::f32::consts::FRAC_PI_3, 0.01, 6000.0);
+            // TODO: use near and far clipping as settings
+            let persp = Perspective::new(
+                (window_size.width / window_size.height) as f32,
+                std::f32::consts::FRAC_PI_3, 1.0, 100000.0);
             let proj = Projection::Perspective(persp);
             camera.set_projection(proj);
             self.previous_size = window_size;
@@ -86,9 +90,11 @@ impl<'s> System<'s> for CameraKeepRatioSystem {
 pub struct CameraZoomNavigationSystem {
     locked_mouse: (f32, f32),
 }
+/// It's call Zoom for handy reasons, but yeah it's not real zoom, it's translation along Z (dolly)
 /// Zoom in/out by set camera Z axis. With Ctrl + click and drag. As camera translation system.
 /// It use the mouse position history to lock the zoom if mouse doesn't move while Ctrl
 /// key still pressed.
+/// To keep a smooth zooming the speed is multiply by the cam.z * 0.003
 impl<'s> System<'s> for CameraZoomNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, Camera>,
@@ -105,8 +111,11 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
                     return
                 }
                 let dist = tw_in.get_mouse_delta_distance();
+                if transform.translation().z <= 1.01 {
+                    return
+                }
                 // TODO: use speed factor as settings
-                transform.prepend_translation_z(dist.1 * 1.2);
+                transform.prepend_translation_z(dist.1 * ((transform.translation().z * 0.003) * 1.2));
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
