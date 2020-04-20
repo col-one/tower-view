@@ -80,9 +80,22 @@ impl<'s> System<'s> for TwImageDroppedSystem {
         if !tw_data.inputs_path.is_empty() {
             while !tw_data.inputs_path.is_empty() {
                 if let Some(path) = tw_data.inputs_path.pop() {
-                    // transfer to cache list for next key
-                    tw_data.file_to_cache.insert(0, OsString::from(&path));
-                    path_to_load.push(path.clone());
+                    if Path::new(&path).is_dir() {
+                        tw_data.working_dir = Path::new(&path).as_os_str().to_owned();
+                        tw_data.file_to_cache = list_valid_files(&tw_data.working_dir);
+                        tw_data.files_order = tw_data.file_to_cache.clone();
+                        tw_data.cache.lock().unwrap().clear();
+                        info!("New working dir: current cache cleared.");
+                        for file in &tw_data.file_to_cache {
+                            let copy_file = file.clone();
+                            path_to_load.push(copy_file.into_string().unwrap());
+                        }
+                    }
+                    else {
+                        // transfer to cache list for next key
+                        tw_data.file_to_cache.insert(0, OsString::from(&path));
+                        path_to_load.push(path.clone());
+                    }
                     debug!("Input image {:?} from CLI are sent to file_to_cache", &path);
                 }
             }
