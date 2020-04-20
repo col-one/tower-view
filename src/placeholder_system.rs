@@ -55,15 +55,27 @@ impl<'s> System<'s> for TwImageDroppedSystem {
     ): Self::SystemData) {
         let mut path_to_load = Vec::new();
         if let Some(drop_file) = &tw_in.last_dropped_file_path.pop() {
-            if !tw_data.files_order.contains(&OsString::from(drop_file)) {
-                tw_data.working_dir = Path::new(drop_file).parent().unwrap().as_os_str().to_owned();
+            if Path::new(drop_file).is_dir() {
+                tw_data.working_dir = Path::new(drop_file).as_os_str().to_owned();
                 tw_data.file_to_cache = list_valid_files(&tw_data.working_dir);
                 tw_data.files_order = tw_data.file_to_cache.clone();
                 tw_data.cache.lock().unwrap().clear();
-                info!("New working dir: current cache cleared.")
+                info!("New working dir: current cache cleared.");
+                for file in &tw_data.file_to_cache {
+                    let copy_file = file.clone();
+                    path_to_load.push(copy_file.into_string().unwrap());
+                }
             }
-            path_to_load.push(drop_file.clone());
-
+            else {
+                if !tw_data.files_order.contains(&OsString::from(drop_file)) {
+                    tw_data.working_dir = Path::new(drop_file).parent().unwrap().as_os_str().to_owned();
+                    tw_data.file_to_cache = list_valid_files(&tw_data.working_dir);
+                    tw_data.files_order = tw_data.file_to_cache.clone();
+                    tw_data.cache.lock().unwrap().clear();
+                    info!("New working dir: current cache cleared.")
+                }
+                path_to_load.push(drop_file.clone());
+            }
         }
         if !tw_data.inputs_path.is_empty() {
             while !tw_data.inputs_path.is_empty() {
@@ -120,7 +132,8 @@ impl<'s> System<'s> for TwCachingImages {
         entities,
         mut td,
     ): Self::SystemData) {
-        for (tw_holder, _entity) in (&mut tw_holders, &*entities).join() {
+        if tw_holders.count() != 0 {
+            let (tw_holder, _e) = (&mut tw_holders, &*entities).join().next().unwrap();
             if tw_holder.to_cache {
                 let cache = Arc::clone(&td.cache);
                 let path = tw_holder.twimage_path.clone();
@@ -130,6 +143,7 @@ impl<'s> System<'s> for TwCachingImages {
                 self.ready_to_cache = true;
             }
         }
+
         if tw_holders.count() == 0 && self.ready_to_cache && !td.file_to_cache.is_empty() {
             let path = td.file_to_cache.pop().unwrap();
             let cache = Arc::clone(&td.cache);
