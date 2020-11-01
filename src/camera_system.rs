@@ -30,11 +30,13 @@ pub struct CameraTranslateNavigationSystem {
 impl<'s> System<'s> for CameraTranslateNavigationSystem {
     type SystemData = (Read<'s, TwInputsHandler>,
                        ReadStorage<'s, TwCamera>,
-                       WriteStorage<'s, Transform>,);
+                       WriteStorage<'s, Transform>,
+                       WriteExpect<'s, Window>);
     fn run(&mut self, (
         tw_in,
         tw_cameras,
-        mut transforms
+        mut transforms,
+        mut window
     ): Self::SystemData) {
         for (_, transform) in (&tw_cameras, &mut transforms).join() {
             if tw_in.keys_pressed.contains(&VirtualKeyCode::Space) && !tw_in.mouse_button_pressed.is_none() {
@@ -48,6 +50,24 @@ impl<'s> System<'s> for CameraTranslateNavigationSystem {
                 transform.prepend_translation_x(-delta_dist_x);
                 transform.prepend_translation_y(delta_dist_y);
                 debug!("Camera moved of {:?}", (delta_dist_x, delta_dist_y));
+                self.locked_mouse = tw_in.mouse_position_history[1];
+                // if mouse block by screen
+                if self.locked_mouse.1 <= 4.0 {
+                    debug!("Cursor lock top screen");
+                    window.set_cursor_position(LogicalPosition::new(self.locked_mouse.0 as f64,  window.get_inner_size().unwrap().height - 5.0));
+                }
+                if self.locked_mouse.1 >=  window.get_inner_size().unwrap().height as f32 - 4.0 {
+                    debug!("Cursor lock down screen, loop the mouse");
+                    window.set_cursor_position(LogicalPosition::new(self.locked_mouse.0 as f64, 5.0));
+                }
+                if self.locked_mouse.0 <= 4.0 {
+                    debug!("Cursor lock left screen");
+                    window.set_cursor_position(LogicalPosition::new(window.get_inner_size().unwrap().width - 5.0, self.locked_mouse.1 as f64));
+                }
+                if self.locked_mouse.0 >=  window.get_inner_size().unwrap().width as f32 - 4.0 {
+                    debug!("Cursor lock right screen, loop the mouse");
+                    window.set_cursor_position(LogicalPosition::new( 5.0, self.locked_mouse.1 as f64));f
+                }
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
@@ -99,11 +119,13 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
     type SystemData = (Write<'s, TwInputsHandler>,
                        ReadStorage<'s, Camera>,
                        WriteStorage<'s, Transform>,
+                       WriteExpect<'s, Window>
                        );
     fn run(&mut self, (
         tw_in,
         tw_cameras,
         mut transforms,
+        mut window
     ): Self::SystemData) {
         for (_cam, transform) in (&tw_cameras, &mut transforms).join() {
             if let Some(_button) = tw_in.ctrl_mouse_button_pressed {
@@ -116,6 +138,16 @@ impl<'s> System<'s> for CameraZoomNavigationSystem {
                 }
                 // TODO: use speed factor as settings
                 transform.prepend_translation_z(dist.1 * ((transform.translation().z * 0.003) * 1.2));
+                self.locked_mouse = tw_in.mouse_position_history[1];
+                // if mouse block by screen
+                if self.locked_mouse.1 <= 4.0 {
+                    debug!("Cursor lock top screen");
+                    window.set_cursor_position(LogicalPosition::new(self.locked_mouse.0 as f64,  window.get_inner_size().unwrap().height - 5.0));
+                }
+                if self.locked_mouse.1 >=  window.get_inner_size().unwrap().height as f32 - 4.0 {
+                    debug!("Cursor lock down screen, loop the mouse");
+                    window.set_cursor_position(LogicalPosition::new(self.locked_mouse.0 as f64, 5.0));
+                }
                 self.locked_mouse = tw_in.mouse_position_history[1];
             }
         }
