@@ -3,9 +3,11 @@ use std::ffi::{OsStr, OsString};
 use std::fs;
 
 
-static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr", "ico", "imageops",
-                                             "io", "jpeg", "jpg", "math", "png", "pnm", "tga",
-                                             "tiff"];
+//static IMAGE_FORMATS: &'static [&str; 15] = &["bmp", "dxt", "flat", "gif", "hdr", "ico", "imageops",
+//                                             "io", "jpeg", "jpg", "math", "png", "pnm", "tga",
+//                                             "tiff"];
+
+static IMAGE_FORMATS: &'static [&str; 8] = &["bmp", "gif", "jpeg", "jpg", "png", "tga", "tiff", "tif"];
 
 
 pub fn is_valid_file(file: &Path) -> bool {

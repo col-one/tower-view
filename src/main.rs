@@ -39,7 +39,7 @@ use crate::tower::{Tower, BACKGROUNDCOLOR, BACKGROUNDCOLOR2};
 use crate::camera_system::{CameraTranslateNavigationSystem, CameraKeepRatioSystem, CameraZoomNavigationSystem, CameraFitNavigationSystem, CameraCenterSystem, CameraOriginalScaleSystem};
 use crate::image_system::{TwImageMoveSystem, TwImageLayoutSystem, TwImageDeleteSystem,
                           TwImageToFrontSystem, TwImageApplyBlendingSystem, TwImageLoadFromCacheSystem,
-                          TwImageNextSystem};
+                          TwImageNextSystem, TwImageRotateSystem};
 use crate::raycasting_system::{TwImageActiveSystem, TwInputsHandlerScreenToWorldSystem};
 use crate::scene_system::{SceneBoundingBox};
 use crate::ui_system::{SliderChannelsSystem};
@@ -63,7 +63,7 @@ fn main() -> amethyst::Result<()> {
             record.args()
         )
     })
-    .filter(None, LevelFilter::Info)
+    .filter(None, LevelFilter::Debug)
     .init();
     
     amethyst::start_logger(Default::default());
@@ -90,6 +90,7 @@ fn main() -> amethyst::Result<()> {
         .with(TwImageToFrontSystem, "image_tofront_system", &["image_active_system"])
         .with(TwImageApplyBlendingSystem, "image_apply_blending_system", &["image_active_system"])
         .with(TwImageMoveSystem::default(), "image_move_system", &["image_active_system"])
+        .with(TwImageRotateSystem::default(), "image_rotate_system", &["image_active_system"])
         .with(TwImageDroppedSystem, "dropped_images", &[])
         .with(TwCachingImages::default(), "caching_image_system", &["dropped_images"])
         .with(TwImageLoadFromCacheSystem, "image_load_from_cache", &["caching_image_system"])

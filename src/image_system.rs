@@ -25,6 +25,7 @@ use crate::placeholder::TwPlaceHolder;
 use std::cmp::Ordering::Equal;
 use std::sync::Arc;
 use std::ffi::OsString;
+use std::ops::Index;
 
 
 #[derive(SystemDesc, Default)]
@@ -69,7 +70,6 @@ impl<'s> System<'s> for TwImageMoveSystem {
         }
     }
 }
-
 
 #[derive(SystemDesc, Default)]
 pub struct TwImageLayoutSystem;
@@ -128,6 +128,35 @@ impl<'s> System<'s> for TwImageLayoutSystem {
                 }
             }
             debug!("Images are layout as an atlas with an offset of {:?}", offset);
+        }
+    }
+}
+
+
+#[derive(SystemDesc, Default)]
+pub struct TwImageRotateSystem;
+/// rotate 90 degree clockwise the active image
+impl<'s> System<'s> for TwImageRotateSystem {
+    type SystemData = (WriteExpect<'s, TwInputsHandler>,
+                       WriteExpect<'s, TowerData>,
+                       WriteStorage<'s, Transform>,
+                       Entities<'s>);
+    fn run(&mut self, (
+        mut tw_in,
+        mut tw_data,
+        mut transforms,
+        entities
+    ): Self::SystemData) {
+        if tw_in.keys_pressed.contains(&VirtualKeyCode::R) && tw_in.keys_pressed.len() == 1 {
+            if time::Duration::from_millis(5000) <= tw_in.stopwatch.elapsed() {
+                if let Some(active_entity) = tw_in.active_entities.last() {
+                    debug!("TwImage is rotating, {:?}", active_entity);
+                    let trans = transforms.get_mut(*active_entity).unwrap();
+                    trans.append_rotation_z_axis(90.0_f32.to_radians());
+                    // time offset
+                    tw_in.keys_pressed.remove(0);
+                }
+            }
         }
     }
 }
