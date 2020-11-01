@@ -105,25 +105,27 @@ impl<'s> System<'s> for TwImageLayoutSystem {
             let mut join_entities = Vec::new();
             // get max width and height
             for _j in 0..twimage_count as usize {
-                let (_tw_image, _transform, sprite, entity) = comp_iter.next().unwrap();
-                join_entities.push(entity);
+                let (tw_image, _transform, sprite, entity) = comp_iter.next().unwrap();
+                join_entities.push((entity, tw_image));
                 let sprite_sheet = sprite_sheets.get(&sprite.sprite_sheet).unwrap();
                 let sprite = &sprite_sheet.sprites[sprite.sprite_number];
                 sprite_heights.push(sprite.height);
                 sprite_widths.push(sprite.width);
             }
+            join_entities.sort_by(|a, b| a.1.file_name.to_lowercase().cmp(&b.1.file_name.to_lowercase()));
             sprite_heights.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
             sprite_widths.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Equal));
             // TODO: offset as settings
             let offset = 10.0;
             let mut i = 0;
-            for x in 0..xy_limit as usize {
-                for y in 0..xy_limit as usize {
+            for y in 0..xy_limit as usize {
+                for x in 0..xy_limit as usize {
                     if i >= twimage_count as usize { continue }
-                    let e = join_entities[i];
+                    debug!("image_name {:?}", join_entities[i].1.file_name);
+                    let e = join_entities[i].0;
                     let transform = transforms.get_mut(e).unwrap();
-                    transform.set_translation_x((sprite_widths.last().unwrap() + offset) * x as f32);
-                    transform.set_translation_y((sprite_heights.last().unwrap() + offset) * y as f32);
+                    transform.set_translation_x((sprite_widths.last().unwrap() + offset) * -(x as f32));
+                    transform.set_translation_y((sprite_heights.last().unwrap() + offset) * -(y as f32));
                     i += 1;
                 }
             }
